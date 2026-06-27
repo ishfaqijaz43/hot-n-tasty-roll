@@ -23,7 +23,7 @@ export const burgersItems: MenuItem[] = [
     price: 450,
     description: "Chicken burger topped with melted cheese.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-loaded-zinger",
@@ -31,7 +31,7 @@ export const burgersItems: MenuItem[] = [
     price: 500,
     description: "Crispy zinger chicken fillet with spicy sauces.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-bbq-malai-cheese",
@@ -39,7 +39,7 @@ export const burgersItems: MenuItem[] = [
     price: 500,
     description: "Juicy malai chicken patty, BBQ sauce, and cheese.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-double-decker",
@@ -47,7 +47,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Two juicy chicken patties in a soft bun.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-sriracha-zinger",
@@ -55,7 +55,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Spicy zinger chicken patty drizzled with tangy Sriracha.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-loaded-zinger-cheese",
@@ -63,7 +63,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Crispy zinger fillet with fresh veggies and melted cheese.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-dynamite-zinger",
@@ -71,7 +71,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Crispy zinger chicken patty topped with spicy dynamite sauce.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-jalapeno-zinger",
@@ -79,7 +79,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Spicy zinger chicken patty paired with fiery jalapeños.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-ranch-zinger",
@@ -87,7 +87,7 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Crispy zinger chicken patty topped with creamy ranch sauce.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-special-zinger",
@@ -95,7 +95,7 @@ export const burgersItems: MenuItem[] = [
     price: 600,
     description: "Premium thick crispy zinger fillet single serving.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-double-decker-cheese",
@@ -103,7 +103,7 @@ export const burgersItems: MenuItem[] = [
     price: 600,
     description: "Two chicken patties stacked with melted cheese layers.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-mega-zinger",
@@ -111,7 +111,7 @@ export const burgersItems: MenuItem[] = [
     price: 800,
     description: "Bold massive burger with crispy chicken patty, cheese, and zesty sauces.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "burger-beef-no-cheese",
@@ -127,6 +127,6 @@ export const burgersItems: MenuItem[] = [
     price: 550,
     description: "Stacked double beef patties with rich melted cheese.",
     category: "burgers",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80"
   }
 ];

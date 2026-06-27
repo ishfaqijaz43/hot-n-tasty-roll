@@ -15,7 +15,7 @@ export const rollsItems: MenuItem[] = [
     price: 300,
     description: "Serves with Fries and ketchup.",
     category: "rolls",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "roll-beef-mayo",
@@ -39,7 +39,7 @@ export const rollsItems: MenuItem[] = [
     price: 250,
     description: "1 Serve.",
     category: "rolls",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "roll-kabab-cheese",
@@ -47,7 +47,7 @@ export const rollsItems: MenuItem[] = [
     price: 200,
     description: "1 Serve.",
     category: "rolls",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "roll-mayo-chk",
@@ -63,7 +63,7 @@ export const rollsItems: MenuItem[] = [
     price: 400,
     description: "With Fries and ketchup.",
     category: "rolls",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "roll-mayo-zinger",

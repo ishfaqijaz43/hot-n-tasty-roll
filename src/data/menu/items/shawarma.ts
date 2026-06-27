@@ -15,7 +15,7 @@ export const shawarmaItems: MenuItem[] = [
     price: 350,
     description: "Crispy chicken skewers with cheese, lettuce, and spicy garlic.",
     category: "arabic-shawarma",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "shawarma-veg",
@@ -31,7 +31,7 @@ export const shawarmaItems: MenuItem[] = [
     price: 270,
     description: "Chicken and beef skewers with cheese and hummus dips.",
     category: "arabic-shawarma",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "shawarma-zinger",

@@ -7,7 +7,7 @@ export const wrapsItems: MenuItem[] = [
     price: 500,
     description: "Golden, crispy wrap oozing with melted cheese.",
     category: "wraps",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "wrap-crunchy",
@@ -23,7 +23,7 @@ export const wrapsItems: MenuItem[] = [
     price: 500,
     description: "Spiced grilled meat, fresh veggies, and creamy sauces.",
     category: "wraps",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "wrap-chipotle",
@@ -39,7 +39,7 @@ export const wrapsItems: MenuItem[] = [
     price: 500,
     description: "Fiery, flavor-packed wrap loaded with spicy chili.",
     category: "wraps",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "wrap-afghani-cheese",
@@ -47,6 +47,6 @@ export const wrapsItems: MenuItem[] = [
     price: 550,
     description: "Rich and creamy wrap filled with marinated paneer/cheese and Afghani-style sauces.",
     category: "wraps",
-    image: "https://images.unsplash.com/photo-1626700051175-6518c4793f4f?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1619193100624-f6755258f275?auto=format&fit=crop&w=600&q=80"
   }
 ];

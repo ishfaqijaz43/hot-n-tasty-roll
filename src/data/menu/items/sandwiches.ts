@@ -7,7 +7,7 @@ export const sandwichesItems: MenuItem[] = [
     price: 400,
     description: "Classic sandwich with tender chicken and savory sauces.",
     category: "sandwiches",
-    image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "sandwich-club",
@@ -71,7 +71,7 @@ export const sandwichesItems: MenuItem[] = [
     price: 650,
     description: "Zesty sandwich loaded with spicy chicken and bold Mexican flavors.",
     category: "sandwiches",
-    image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=600&q=80"
   },
   {
     id: "sandwich-malai-club-cheese",
@@ -87,6 +87,6 @@ export const sandwichesItems: MenuItem[] = [
     price: 750,
     description: "Crispy golden structure loaded with molten cheese and rich sauce.",
     category: "sandwiches",
-    image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=600&q=80"
   }
 ];
