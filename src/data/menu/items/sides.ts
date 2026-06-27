@@ -31,7 +31,7 @@ export const sidesItems: MenuItem[] = [
     price: 50,
     description: "Creamy condiment.",
     category: "sides",
-    image: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=600&q=80"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzD-K6deduY-E8edpl_ab-RbRnVQIjhdAKMqOa2ampr5j-5qH9_8e5518&s=10"
   },
   {
     id: "side-single-paratha",
