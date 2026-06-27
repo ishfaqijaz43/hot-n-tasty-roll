@@ -23,7 +23,7 @@ export const sidesItems: MenuItem[] = [
     price: 140,
     description: "Flaky, layered flatbread.",
     category: "sides",
-    image: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQir0waIKo-dpJCNGtKa4iOgqHYEwTp6BQvWHwDyaSmOF5vgZptvqE-5uci&s=10"
   },
   {
     id: "side-mayo",
