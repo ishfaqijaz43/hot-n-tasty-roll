@@ -19,18 +19,18 @@ export type { MenuItem };
 export { CATEGORIES };
 
 export const menuItems: MenuItem[] = [
-  ...sidesItems,
-  ...broastItems,
-  ...shawarmaItems,
-  ...wrapsItems,
-  ...rollsItems,
   ...dealsItems,
+  ...burgersItems,
+  ...bbqItems,
+  ...rollsItems,
+  ...wrapsItems,
+  ...shawarmaItems,
+  ...broastItems,
   ...pizzaItems,
   ...combosItems,
   ...pastaItems,
   ...friesItems,
-  ...burgersItems,
-  ...bbqItems,
   ...sandwichesItems,
+  ...sidesItems,
   ...beveragesItems
 ];
