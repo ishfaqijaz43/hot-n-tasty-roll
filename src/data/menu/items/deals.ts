@@ -7,7 +7,7 @@ export const dealsItems: MenuItem[] = [
     price: 600,
     description: "Chicken Burger & half club sandwich.",
     category: "delicious-deals",
-    image: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=600&q=80"
+    image: "https://images.immediate.co.uk/production/volatile/sites/30/2025/04/Crispiest-buttermilk-fried-chicken-burgers-90854e5.jpg?quality=90&resize=708,643"
   },
   {
     id: "deal-2",
