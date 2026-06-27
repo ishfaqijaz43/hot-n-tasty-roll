@@ -7,7 +7,7 @@ export const sidesItems: MenuItem[] = [
     price: 50,
     description: "Melted cheese on a crispy base.",
     category: "sides",
-    image: "https://images.unsplash.com/photo-1486299267070-83823f5448dd?auto=format&fit=crop&w=600&q=80"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT72r2eYgz2xegB85Jv7NXs49B1kc3ozfYT7OYsowAUixH_3HNgM2YXT26t&s=10"
   },
   {
     id: "side-raita",
