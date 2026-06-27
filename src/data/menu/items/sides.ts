@@ -15,7 +15,7 @@ export const sidesItems: MenuItem[] = [
     price: 50,
     description: "Plain yogurt with raw or cooked vegetables.",
     category: "sides",
-    image: "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?auto=format&fit=crop&w=600&q=80"
+    image: "https://untoldrecipesbynosheen.com/wp-content/uploads/2020/09/green-raita-featured.jpg"
   },
   {
     id: "side-double-paratha",
