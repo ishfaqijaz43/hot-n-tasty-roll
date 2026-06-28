@@ -15,10 +15,13 @@ import {
   X,
   Heart,
   ThumbsUp,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 import { menuItems, CATEGORIES, MenuItem } from "@/data/menu";
 import { CartDrawer } from "@/components/CartDrawer";
+import { LoginModal } from "@/components/LoginModal";
+import { AdminDashboard } from "@/components/AdminDashboard";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner";
 
@@ -28,15 +31,25 @@ interface CartItem {
 }
 
 const Index = () => {
+  // Dynamic Menu List State with LocalStorage persistence
+  const [menuList, setMenuList] = useState<MenuItem[]>(() => {
+    const saved = localStorage.getItem("chilli_try_fry_menu");
+    return saved ? JSON.parse(saved) : menuItems;
+  });
+
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Admin Panel States
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   // Filter menu items based on category and search query
   const filteredItems = useMemo(() => {
-    return menuItems.filter((item) => {
+    return menuList.filter((item) => {
       const matchesCategory =
         selectedCategory === "all" || item.category === selectedCategory;
       const matchesSearch =
@@ -44,7 +57,7 @@ const Index = () => {
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [menuList, selectedCategory, searchQuery]);
 
   // Cart Handlers
   const handleAddToCart = (item: MenuItem) => {
@@ -99,6 +112,29 @@ const Index = () => {
     }
     setIsMobileMenuOpen(false);
   };
+
+  // Admin Handlers
+  const handleSaveMenu = (updatedItems: MenuItem[]) => {
+    setMenuList(updatedItems);
+    localStorage.setItem("chilli_try_fry_menu", JSON.stringify(updatedItems));
+    toast.success("Menu changes saved successfully!");
+  };
+
+  const handleLogout = () => {
+    setIsAdminMode(false);
+    toast.info("Logged out of Admin Panel.");
+  };
+
+  // If Admin Mode is active, render the Admin Dashboard instead of the customer view
+  if (isAdminMode) {
+    return (
+      <AdminDashboard
+        items={menuList}
+        onSave={handleSaveMenu}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0F0F11] text-zinc-100 font-sans selection:bg-amber-500 selection:text-black">
@@ -408,7 +444,7 @@ const Index = () => {
                 Nestled in the heart of Karachi's historic food hub, Kharadar, Chilli Try Fry has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
               </p>
               <p className="text-zinc-400 leading-relaxed">
-                Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Arabic Shawarmas, crispy golden Broasts, or loaded lava fries, every bite is a celebration of Karachi's vibrant culinary spirit.
+                Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Arabic Shawarmas, crispy golden Golden Broasts, or loaded lava fries, every bite is a celebration of Karachi's vibrant culinary spirit.
               </p>
 
               {/* Features Grid */}
@@ -665,6 +701,18 @@ const Index = () => {
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
             Karachi's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
           </p>
+          
+          {/* Staff Login Link */}
+          <div className="pt-2">
+            <button
+              onClick={() => setIsLoginModalOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-amber-500 transition-colors font-semibold"
+            >
+              <Lock className="w-3 h-3" />
+              Staff Login
+            </button>
+          </div>
+
           <div className="border-t border-zinc-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
             <p>© {new Date().getFullYear()} Chilli Try Fry. All rights reserved.</p>
             <p>Designed for Karachi's ultimate food lovers.</p>
@@ -681,6 +729,13 @@ const Index = () => {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
+      />
+
+      {/* Staff Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={() => setIsAdminMode(true)}
       />
     </div>
   );
