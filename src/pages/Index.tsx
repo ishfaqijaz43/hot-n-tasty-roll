@@ -721,6 +721,13 @@ const Index = () => {
         </div>
       </footer>
 
+      {/* Minimalist Bottom Footer */}
+      <div className="bg-[#08080A] border-t border-zinc-900/60 py-4 text-center">
+        <p className="text-[11px] text-zinc-500 tracking-wide font-medium">
+          © 2026 Chilli Try Fry. All Rights Reserved. | Developed by ByteCraft Solutions
+        </p>
+      </div>
+
       {/* Shopping Cart Drawer */}
       <CartDrawer
         isOpen={isCartOpen}

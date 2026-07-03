@@ -1,5 +1,5 @@
-import React from "react";
-import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import React, { useState } from "react";
+import { X, Plus, Minus, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle } from "lucide-react";
 import { MenuItem } from "@/data/menu";
 
 interface CartItem {
@@ -16,6 +16,17 @@ interface CartDrawerProps {
   onClearCart: () => void;
 }
 
+const AREAS = [
+  "Kharadar",
+  "Mithadar",
+  "Lyari",
+  "Tower",
+  "Garden",
+  "Clifton",
+  "Saddar",
+  "Other"
+];
+
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
   onClose,
@@ -24,31 +35,49 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onRemoveItem,
   onClearCart,
 }) => {
+  const [customerName, setCustomerName] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [showWarning, setShowWarning] = useState(false);
+
   const subtotal = cartItems.reduce(
     (sum, cartItem) => sum + cartItem.item.price * cartItem.quantity,
     0
   );
 
+  const isFormValid = customerName.trim() !== "" && selectedArea !== "" && deliveryAddress.trim() !== "";
+
   const handleWhatsAppCheckout = () => {
     if (cartItems.length === 0) return;
 
+    if (!isFormValid) {
+      setShowWarning(true);
+      return;
+    }
+
+    setShowWarning(false);
+
     // Format the WhatsApp message exactly as requested:
-    // *🔥 NEW ORDER - CHILLI TRY FRY 🔥*
-    // ---------------------------------
-    // [Item Name] x [Quantity] - Rs [Price]
-    // ---------------------------------
-    // *Total Bill:* Rs [Total Amount]
-    // 
-    // Please confirm my order for preparation!
+    // *NEW DELIVERY ORDER*
+    // -------------------------
+    // *Name:* [Customer Name]
+    // *Area:* [Selected Area]
+    // *Address:* [Complete Address]
+    // -------------------------
+    // *ORDER DETAILS:*
+    // - [Item 1] x [Qty] (Rs. [Price])
+    // - [Item 2] x [Qty] (Rs. [Price])
+    // -------------------------
+    // *Total Bill:* Rs. [Total Amount]
 
     const itemsText = cartItems
       .map(
         (cartItem) =>
-          `${cartItem.item.name} x ${cartItem.quantity} - Rs ${cartItem.item.price * cartItem.quantity}`
+          `- ${cartItem.item.name} x ${cartItem.quantity} (Rs. ${cartItem.item.price * cartItem.quantity})`
       )
       .join("\n");
 
-    const message = `*🔥 NEW ORDER - CHILLI TRY FRY 🔥*\n---------------------------------\n${itemsText}\n---------------------------------\n*Total Bill:* Rs ${subtotal}\n\nPlease confirm my order for preparation!`;
+    const message = `*NEW DELIVERY ORDER*\n-------------------------\n*Name:* ${customerName.trim()}\n*Area:* ${selectedArea}\n*Address:* ${deliveryAddress.trim()}\n-------------------------\n*ORDER DETAILS:*\n${itemsText}\n-------------------------\n*Total Bill:* Rs. ${subtotal}`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/923312400434?text=${encodedMessage}`;
@@ -113,65 +142,130 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </button>
             </div>
           ) : (
-            cartItems.map((cartItem) => (
-              <div
-                key={cartItem.item.id}
-                className="flex gap-4 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800/60 hover:border-zinc-800 transition-colors"
-              >
-                <img
-                  src={cartItem.item.image}
-                  alt={cartItem.item.name}
-                  className="w-16 h-16 object-cover rounded-lg bg-zinc-800"
-                />
-                <div className="flex-1 min-w-0 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-semibold text-white text-sm truncate">
-                        {cartItem.item.name}
-                      </h4>
-                      <button
-                        onClick={() => onRemoveItem(cartItem.item.id)}
-                        className="text-zinc-500 hover:text-red-500 transition-colors p-0.5"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+            <div className="space-y-4">
+              {cartItems.map((cartItem) => (
+                <div
+                  key={cartItem.item.id}
+                  className="flex gap-4 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800/60 hover:border-zinc-800 transition-colors"
+                >
+                  <img
+                    src={cartItem.item.image}
+                    alt={cartItem.item.name}
+                    className="w-16 h-16 object-cover rounded-lg bg-zinc-800"
+                  />
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="font-semibold text-white text-sm truncate">
+                          {cartItem.item.name}
+                        </h4>
+                        <button
+                          onClick={() => onRemoveItem(cartItem.item.id)}
+                          className="text-zinc-500 hover:text-red-500 transition-colors p-0.5"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5">
+                        {cartItem.item.description}
+                      </p>
                     </div>
-                    <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5">
-                      {cartItem.item.description}
-                    </p>
-                  </div>
 
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-amber-500 font-bold text-sm">
-                      Rs {cartItem.item.price * cartItem.quantity}
-                    </span>
-                    <div className="flex items-center bg-zinc-800 rounded-lg p-1 border border-zinc-700">
-                      <button
-                        onClick={() => onUpdateQuantity(cartItem.item.id, -1)}
-                        className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="px-2.5 text-xs font-semibold text-white">
-                        {cartItem.quantity}
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-amber-500 font-bold text-sm">
+                        Rs {cartItem.item.price * cartItem.quantity}
                       </span>
-                      <button
-                        onClick={() => onUpdateQuantity(cartItem.item.id, 1)}
-                        className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center bg-zinc-800 rounded-lg p-1 border border-zinc-700">
+                        <button
+                          onClick={() => onUpdateQuantity(cartItem.item.id, -1)}
+                          className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="px-2.5 text-xs font-semibold text-white">
+                          {cartItem.quantity}
+                        </span>
+                        <button
+                          onClick={() => onUpdateQuantity(cartItem.item.id, 1)}
+                          className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white transition-colors"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 
         {/* Footer Summary & Checkout */}
         {cartItems.length > 0 && (
-          <div className="p-6 border-t border-zinc-800 bg-zinc-900/80 space-y-4">
+          <div className="p-6 border-t border-zinc-800 bg-zinc-900/80 space-y-4 max-h-[60%] overflow-y-auto">
+            {/* Delivery Details Form */}
+            <div className="space-y-3 border-b border-zinc-800 pb-4">
+              <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider">
+                Delivery Details
+              </h4>
+              
+              {/* Customer Name */}
+              <div className="space-y-1">
+                <label className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-zinc-500" /> Name *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={customerName}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    if (showWarning) setShowWarning(false);
+                  }}
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              {/* Select Area */}
+              <div className="space-y-1">
+                <label className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-zinc-500" /> Select Area *
+                </label>
+                <select
+                  value={selectedArea}
+                  onChange={(e) => {
+                    setSelectedArea(e.target.value);
+                    if (showWarning) setShowWarning(false);
+                  }}
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500"
+                >
+                  <option value="">-- Choose Area --</option>
+                  {AREAS.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Complete Address */}
+              <div className="space-y-1">
+                <label className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                  <Home className="w-3.5 h-3.5 text-zinc-500" /> Complete Delivery Address *
+                </label>
+                <textarea
+                  placeholder="House/Apartment No, Street, Landmark..."
+                  value={deliveryAddress}
+                  onChange={(e) => {
+                    setDeliveryAddress(e.target.value);
+                    if (showWarning) setShowWarning(false);
+                  }}
+                  rows={2}
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-xs focus:outline-none focus:border-amber-500 resize-none"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex justify-between text-zinc-400 text-sm">
                 <span>Subtotal</span>
@@ -187,10 +281,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             </div>
 
+            {/* Validation Warning */}
+            {showWarning && !isFormValid && (
+              <div className="flex items-center gap-2 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Please fill in all delivery details before placing your order.</span>
+              </div>
+            )}
+
             <div className="space-y-2 pt-2">
               <button
                 onClick={handleWhatsAppCheckout}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/40 active:scale-[0.98]"
+                className={`w-full py-3.5 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg active:scale-[0.98] ${
+                  isFormValid
+                    ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20 hover:shadow-emerald-900/40"
+                    : "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50"
+                }`}
               >
                 {/* Custom SVG WhatsApp Icon */}
                 <svg
