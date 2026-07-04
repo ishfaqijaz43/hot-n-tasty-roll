@@ -13,7 +13,6 @@ import {
   ChevronRight,
   Menu,
   X,
-  Heart,
   ThumbsUp,
   ShieldCheck,
   Lock,
@@ -140,23 +139,23 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0C] text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
+    <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#0A0A0C]/95 backdrop-blur-md border-b border-zinc-800/80 transition-all">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-11 h-11 bg-gradient-to-br from-red-700 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
             <div>
-              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-red-400 to-red-600 bg-clip-text text-transparent">
+              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
                 HOT N TASTY ROLL
               </span>
-              <span className="block text-[10px] text-zinc-400 tracking-widest uppercase font-bold">
+              <span className="block text-[10px] text-zinc-500 tracking-widest uppercase font-bold">
                 Gulistan-e-Johar, Karachi
               </span>
             </div>
@@ -166,19 +165,19 @@ const Index = () => {
           <nav className="hidden md:flex items-center gap-8">
             <button
               onClick={() => scrollToSection("menu")}
-              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               Our Menu
             </button>
             <button
               onClick={() => scrollToSection("about")}
-              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               About Us
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               Location & Timings
             </button>
@@ -189,11 +188,11 @@ const Index = () => {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-white transition-all duration-200 hover:border-red-500/50 group"
+              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group"
             >
-              <ShoppingBag className="w-5 h-5 group-hover:text-red-500 transition-colors" />
+              <ShoppingBag className="w-5 h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white text-[11px] font-bold w-5.5 h-5.5 rounded-full flex items-center justify-center border-2 border-[#0A0A0C] animate-bounce">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-600 to-red-500 text-white text-[11px] font-bold w-5.5 h-5.5 rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                   {totalCartCount}
                 </span>
               )}
@@ -202,7 +201,7 @@ const Index = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-white transition-colors"
+              className="md:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -211,22 +210,22 @@ const Index = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-[#0A0A0C] border-b border-zinc-800 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
+          <div className="md:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
             <button
               onClick={() => scrollToSection("menu")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               Our Menu
             </button>
             <button
               onClick={() => scrollToSection("about")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               About Us
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
             >
               Location & Timings
             </button>
@@ -235,121 +234,120 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-20">
-        {/* Background Image with Dark Overlay */}
+      <section id="hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden py-20 bg-white">
+        {/* Background Image with Red/White Overlay */}
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=1920&q=80"
             alt="Sizzling paratha rolls cooking"
-            className="w-full h-full object-cover object-center scale-105 animate-pulse duration-[8000ms]"
+            className="w-full h-full object-cover object-center scale-105 opacity-20"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-[#0A0A0C]/80 to-transparent" />
-          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent" />
         </div>
 
         {/* Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8">
           {/* Prominent Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs sm:text-sm font-bold uppercase tracking-wider animate-bounce">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-600 text-xs sm:text-sm font-bold uppercase tracking-wider animate-bounce">
             ⭐ 4.0 Rating (1,032+ Google Reviews)
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-tight">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-900 leading-tight">
             Hot n Tasty Roll <br />
-            <span className="bg-gradient-to-r from-red-500 via-red-400 to-white bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
               "Bringing Out The Best !!!"
             </span>
           </h1>
 
-          <p className="text-zinc-300 text-base sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="text-zinc-600 text-base sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
             Experience the ultimate taste of Gulistan-e-Johar. Sizzling hot paratha rolls, crispy zingers, juicy burgers, and premium BBQ plates crafted to perfection.
           </p>
 
           {/* Minimalist Features Icons */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-300 pt-2">
-            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
-              <Coffee className="w-4 h-4 text-red-500" />
-              <span>Happy-Hour Food</span>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-700 pt-2">
+            <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
+              <Coffee className="w-4 h-4 text-red-600" />
+              <span className="font-semibold">Happy-Hour Food</span>
             </div>
-            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
-              <Wifi className="w-4 h-4 text-red-500" />
-              <span>Free Wi-Fi</span>
+            <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
+              <Wifi className="w-4 h-4 text-red-600" />
+              <span className="font-semibold">Free Wi-Fi</span>
             </div>
-            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
-              <Smile className="w-4 h-4 text-red-500" />
-              <span>Kids' Menu Available</span>
+            <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
+              <Smile className="w-4 h-4 text-red-600" />
+              <span className="font-semibold">Kids' Menu Available</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => scrollToSection("menu")}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
             >
               <Utensils className="w-5 h-5" />
               Order Now
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="w-full sm:w-auto px-8 py-4 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <MapPin className="w-5 h-5 text-red-500" />
+              <MapPin className="w-5 h-5 text-red-600" />
               Find Us in Johar
             </button>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-12 border-t border-zinc-800/50">
-            <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-red-500">4:00 PM</p>
-              <p className="text-xs text-zinc-400 mt-1">Opening Time</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-12 border-t border-zinc-200">
+            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
+              <p className="text-2xl sm:text-3xl font-black text-red-600">4:00 PM</p>
+              <p className="text-xs text-zinc-500 mt-1 font-bold">Opening Time</p>
             </div>
-            <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-red-500">3:30 AM</p>
-              <p className="text-xs text-zinc-400 mt-1">Closing Time</p>
+            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
+              <p className="text-2xl sm:text-3xl font-black text-red-600">3:30 AM</p>
+              <p className="text-xs text-zinc-500 mt-1 font-bold">Closing Time</p>
             </div>
-            <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-red-500">1,032+</p>
-              <p className="text-xs text-zinc-400 mt-1">Google Reviews</p>
+            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
+              <p className="text-2xl sm:text-3xl font-black text-red-600">1,032+</p>
+              <p className="text-xs text-zinc-500 mt-1 font-bold">Google Reviews</p>
             </div>
-            <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-red-500">Johar</p>
-              <p className="text-xs text-zinc-400 mt-1">Block 17, Karachi</p>
+            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
+              <p className="text-2xl sm:text-3xl font-black text-red-600">Johar</p>
+              <p className="text-xs text-zinc-500 mt-1 font-bold">Block 17, Karachi</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Interactive Menu Section */}
-      <section id="menu" className="py-24 bg-[#0F0F11] border-y border-zinc-900">
+      <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
               <Sparkles className="w-3.5 h-3.5" />
               Freshly Prepared
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
+            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900">
               Explore Our Sizzling Menu
             </h2>
-            <p className="text-zinc-400 text-sm sm:text-base">
+            <p className="text-zinc-600 text-sm sm:text-base">
               From spicy Chicken Rolls to loaded burgers and premium BBQ plates, we have something to satisfy every craving. Filter by category or search below.
             </p>
 
             {/* Search Bar */}
             <div className="relative max-w-md mx-auto mt-8">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search for rolls, burgers, deals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-sm"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-sm shadow-sm"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs"
                 >
                   Clear
                 </button>
@@ -365,8 +363,8 @@ const Index = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
                   selectedCategory === category.id
-                    ? "bg-gradient-to-r from-red-700 to-red-500 text-white shadow-lg shadow-red-600/20 scale-105"
-                    : "bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800/80"
+                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-600/20 scale-105"
+                    : "bg-white hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 border border-zinc-200 shadow-sm"
                 }`}
               >
                 {category.name}
@@ -376,8 +374,8 @@ const Index = () => {
 
           {/* Food Grid */}
           {filteredItems.length === 0 ? (
-            <div className="text-center py-16 bg-zinc-900/20 rounded-2xl border border-zinc-800/50">
-              <p className="text-zinc-400 text-lg">No items found matching your criteria.</p>
+            <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+              <p className="text-zinc-500 text-lg">No items found matching your criteria.</p>
               <button
                 onClick={() => {
                   setSelectedCategory("all");
@@ -393,17 +391,17 @@ const Index = () => {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group bg-zinc-900/40 rounded-2xl border border-zinc-800/60 overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col hover:scale-[1.02] hover:shadow-xl hover:shadow-black/40"
+                  className="group bg-white rounded-2xl border border-zinc-200 overflow-hidden hover:border-red-500/50 transition-all duration-300 flex flex-col hover:scale-[1.02] hover:shadow-xl shadow-sm"
                 >
                   {/* Image Container */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-zinc-800">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100">
                     <img
                       src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <span className="absolute top-3 right-3 px-3 py-1 bg-black/80 backdrop-blur-md border border-zinc-800 rounded-full text-xs font-bold text-red-400">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <span className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-md border border-zinc-200 rounded-full text-xs font-bold text-red-600 shadow-sm">
                       {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
                     </span>
                   </div>
@@ -411,24 +409,24 @@ const Index = () => {
                   {/* Content */}
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <h3 className="font-bold text-lg text-white group-hover:text-red-400 transition-colors line-clamp-1">
+                      <h3 className="font-bold text-lg text-zinc-900 group-hover:text-red-600 transition-colors line-clamp-1">
                         {item.name}
                       </h3>
-                      <p className="text-zinc-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                      <p className="text-zinc-600 text-xs sm:text-sm line-clamp-2 leading-relaxed">
                         {item.description}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
                       <div className="flex flex-col">
                         <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Price</span>
-                        <span className="text-xl font-black text-white">
+                        <span className="text-xl font-black text-red-600">
                           Rs {item.price}
                         </span>
                       </div>
                       <button
                         onClick={() => handleAddToCart(item)}
-                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition-all duration-200 flex items-center gap-1.5 active:scale-95"
+                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
                       >
                         <Plus className="w-4 h-4" />
                         Add to Cart
@@ -443,55 +441,55 @@ const Index = () => {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="py-24 bg-[#0A0A0C] relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
+      <section id="about" className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-50 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Story */}
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/10 text-red-400 text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
                 <Flame className="w-3.5 h-3.5" />
                 Our Legacy
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+              <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 leading-tight">
                 The Story of <br />
-                <span className="bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
                   Hot n Tasty Roll
                 </span>
               </h2>
-              <p className="text-zinc-300 leading-relaxed">
+              <p className="text-zinc-700 leading-relaxed">
                 Located in the bustling heart of Gulistan-e-Johar, Hot n Tasty Roll has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
               </p>
-              <p className="text-zinc-400 leading-relaxed">
+              <p className="text-zinc-600 leading-relaxed">
                 Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
               </p>
 
               {/* Features Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg text-red-500 shrink-0">
+                  <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0 border border-red-100">
                     <ThumbsUp className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">Unmatched Taste</h4>
+                    <h4 className="font-bold text-zinc-900 text-sm">Unmatched Taste</h4>
                     <p className="text-xs text-zinc-500 mt-0.5">Authentic local spices</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-600/10 rounded-lg text-red-500 shrink-0">
+                  <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0 border border-red-100">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">Late Night</h4>
+                    <h4 className="font-bold text-zinc-900 text-sm">Late Night</h4>
                     <p className="text-xs text-zinc-500 mt-0.5">Open till 3:30 AM</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 shrink-0">
+                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 shrink-0 border border-emerald-100">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">100% Halal</h4>
+                    <h4 className="font-bold text-zinc-900 text-sm">100% Halal</h4>
                     <p className="text-xs text-zinc-500 mt-0.5">Fresh ingredients daily</p>
                   </div>
                 </div>
@@ -500,21 +498,21 @@ const Index = () => {
 
             {/* Right: Visual Collage */}
             <div className="relative">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-zinc-800">
+              <div className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 shadow-md">
                 <img
                   src="https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80"
                   alt="Sizzling paratha roll preparation"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 w-1/2 aspect-video rounded-xl overflow-hidden border border-zinc-800 shadow-2xl hidden sm:block">
+              <div className="absolute -bottom-6 -left-6 w-1/2 aspect-video rounded-xl overflow-hidden border border-zinc-200 shadow-2xl hidden sm:block">
                 <img
                   src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80"
                   alt="Juicy burger"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-red-700 to-red-500 p-6 rounded-2xl text-white shadow-xl hidden sm:block max-w-[200px]">
+              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-red-600 to-red-500 p-6 rounded-2xl text-white shadow-xl hidden sm:block max-w-[200px]">
                 <p className="text-3xl font-black">1,032+</p>
                 <p className="text-xs font-bold text-white/80 mt-1">Happy Google Reviews</p>
               </div>
@@ -524,77 +522,77 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 bg-[#0F0F11] border-t border-zinc-900">
+      <section className="py-24 bg-zinc-50 border-t border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
               <Star className="w-3.5 h-3.5 fill-current" />
               Customer Reviews
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white">
+            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900">
               Loved by Karachiites
             </h2>
-            <p className="text-zinc-400 text-sm sm:text-base">
+            <p className="text-zinc-600 text-sm sm:text-base">
               Don't just take our word for it. Here is what our regular foodies from Gulistan-e-Johar and beyond have to say about Hot n Tasty Roll.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
+            <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm space-y-4">
               <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-zinc-300 text-sm italic leading-relaxed">
+              <p className="text-zinc-700 text-sm italic leading-relaxed">
                 "The Chicken Garlic Mayo Roll is absolutely out of this world! The paratha is so crispy and the garlic mayo is incredibly rich. Best midnight spot in Johar!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600 border border-red-100">
                   AH
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Asad Hussain</h4>
+                  <h4 className="font-bold text-zinc-900 text-sm">Asad Hussain</h4>
                   <p className="text-xs text-zinc-500">Gulistan-e-Johar, Karachi</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
+            <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm space-y-4">
               <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-zinc-300 text-sm italic leading-relaxed">
+              <p className="text-zinc-700 text-sm italic leading-relaxed">
                 "We ordered Festival Deal 1 for our late-night gaming session. The rolls were incredibly juicy and flavorful. Delivery was fast and the food arrived piping hot!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600 border border-red-100">
                   SF
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Sana Fatima</h4>
+                  <h4 className="font-bold text-zinc-900 text-sm">Sana Fatima</h4>
                   <p className="text-xs text-zinc-500">Block 13, Karachi</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
+            <div className="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm space-y-4">
               <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
-              <p className="text-zinc-300 text-sm italic leading-relaxed">
+              <p className="text-zinc-700 text-sm italic leading-relaxed">
                 "The Chicken Malai Boti Roll is a masterpiece. The meat is so tender it melts in your mouth. Highly recommend Hot n Tasty Roll to everyone!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600 border border-red-100">
                   ZK
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Zain Khan</h4>
+                  <h4 className="font-bold text-zinc-900 text-sm">Zain Khan</h4>
                   <p className="text-xs text-zinc-500">Block 17, Karachi</p>
                 </div>
               </div>
@@ -604,68 +602,68 @@ const Index = () => {
       </section>
 
       {/* Location & Timing Footer Section */}
-      <section id="location" className="py-24 bg-[#0A0A0C] border-t border-zinc-900">
+      <section id="location" className="py-24 bg-white border-t border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Details */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
                   <MapPin className="w-3.5 h-3.5" />
                   Visit Us
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-black text-white">
+                <h2 className="text-3xl sm:text-5xl font-black text-zinc-900">
                   Where to Find Us
                 </h2>
-                <p className="text-zinc-400 text-sm sm:text-base">
+                <p className="text-zinc-600 text-sm sm:text-base">
                   We are located in the legendary Noman Grand City, Block 17, Gulistan-e-Johar, Karachi. Stop by for a sizzling hot meal straight from the wok!
                 </p>
               </div>
 
               {/* Contact Info Cards */}
               <div className="space-y-4">
-                <div className="flex gap-4 p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/60">
-                  <div className="p-3 bg-red-500/10 rounded-xl text-red-500 shrink-0">
+                <div className="flex gap-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 shadow-sm">
+                  <div className="p-3 bg-red-50 rounded-xl text-red-600 shrink-0 border border-red-100">
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">Address</h4>
-                    <p className="text-zinc-300 text-sm mt-1">
+                    <h4 className="font-bold text-zinc-900 text-sm">Address</h4>
+                    <p className="text-zinc-700 text-sm mt-1">
                       Noman Grand City, Block 17, Gulistan-e-Johar, Karachi
                     </p>
-                    <span className="inline-block text-xs text-red-500 font-semibold mt-1">
+                    <span className="inline-block text-xs text-red-600 font-semibold mt-1">
                       📍 Located in Gulistan-e-Johar
                     </span>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/60">
-                  <div className="p-3 bg-red-600/10 rounded-xl text-red-500 shrink-0">
+                <div className="flex gap-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 shadow-sm">
+                  <div className="p-3 bg-red-50 rounded-xl text-red-600 shrink-0 border border-red-100">
                     <Clock className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">Operational Hours</h4>
-                    <div className="text-zinc-300 text-sm mt-1 space-y-1">
+                    <h4 className="font-bold text-zinc-900 text-sm">Operational Hours</h4>
+                    <div className="text-zinc-700 text-sm mt-1 space-y-1">
                       <p className="flex justify-between gap-4">
                         <span>Open Daily:</span>
-                        <span className="font-semibold text-white">4:00 PM – 3:30 AM</span>
+                        <span className="font-semibold text-zinc-900">4:00 PM – 3:30 AM</span>
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4 p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/60">
-                  <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500 shrink-0">
+                <div className="flex gap-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 shadow-sm">
+                  <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 shrink-0 border border-emerald-100">
                     <Phone className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white text-sm">Phone / Contact</h4>
-                    <p className="text-zinc-300 text-sm mt-1">
+                    <h4 className="font-bold text-zinc-900 text-sm">Phone / Contact</h4>
+                    <p className="text-zinc-700 text-sm mt-1">
                       +92 300 3919005
                     </p>
                     <a
                       href="tel:+923003919005"
-                      className="inline-block text-xs text-emerald-500 font-semibold mt-1 hover:underline"
+                      className="inline-block text-xs text-emerald-600 font-semibold mt-1 hover:underline"
                     >
                       Call Now to Order
                     </a>
@@ -675,16 +673,16 @@ const Index = () => {
             </div>
 
             {/* Right: Map Placeholder */}
-            <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 flex flex-col items-center justify-center text-center p-8 space-y-4">
+            <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex flex-col items-center justify-center text-center p-8 space-y-4 shadow-sm">
               {/* Decorative Map Background Pattern */}
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]" />
               
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 relative z-10">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-600 relative z-10 border border-red-100">
                 <MapPin className="w-8 h-8" />
               </div>
               <div className="relative z-10 space-y-2">
-                <h3 className="font-bold text-lg text-white">Noman Grand City</h3>
-                <p className="text-sm text-zinc-400 max-w-xs mx-auto">
+                <h3 className="font-bold text-lg text-zinc-900">Noman Grand City</h3>
+                <p className="text-sm text-zinc-500 max-w-xs mx-auto">
                   Block 17, Gulistan-e-Johar, Karachi
                 </p>
               </div>
@@ -692,7 +690,7 @@ const Index = () => {
                 href="https://maps.google.com/?q=Noman+Grand+City,+Block+17,+Gulistan-e-Johar,+Karachi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative z-10 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl text-sm transition-colors border border-zinc-700 flex items-center gap-2"
+                className="relative z-10 px-6 py-2.5 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold rounded-xl text-sm transition-colors border border-zinc-200 flex items-center gap-2 shadow-sm"
               >
                 Open in Google Maps
                 <ChevronRight className="w-4 h-4" />
@@ -703,13 +701,13 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#0A0A0C] border-t border-zinc-900 py-12">
+      <footer className="bg-white border-t border-zinc-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <div className="flex items-center justify-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-red-700 to-red-500 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-black tracking-wider bg-gradient-to-r from-white via-red-400 to-red-600 bg-clip-text text-transparent">
+            <span className="text-lg font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
               HOT N TASTY ROLL
             </span>
           </div>
@@ -721,14 +719,14 @@ const Index = () => {
           <div className="pt-2">
             <button
               onClick={() => setIsLoginModalOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-red-500 transition-colors font-semibold"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-600 transition-colors font-semibold"
             >
               <Lock className="w-3 h-3" />
               Staff Login
             </button>
           </div>
 
-          <div className="border-t border-zinc-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
+          <div className="border-t border-zinc-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500 text-xs">
             <p>© 2026 Hot n Tasty Roll. All Rights Reserved. | Developed by ByteCraft Solutions</p>
             <p>Designed for Karachi's ultimate food lovers.</p>
           </div>
