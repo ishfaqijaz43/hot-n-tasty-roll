@@ -16,12 +16,15 @@ import {
   Heart,
   ThumbsUp,
   ShieldCheck,
-  Lock
+  Lock,
+  Wifi,
+  Smile,
+  Coffee
 } from "lucide-react";
-import { menuItems, CATEGORIES, MenuItem } from "@/data/menu";
-import { CartDrawer } from "@/components/CartDrawer";
+import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/data/hotNTastyMenu";
+import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
 import { LoginModal } from "@/components/LoginModal";
-import { AdminDashboard } from "@/components/AdminDashboard";
+import { HotNTastyAdminDashboard } from "@/components/HotNTastyAdminDashboard";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner";
 
@@ -33,8 +36,8 @@ interface CartItem {
 const Index = () => {
   // Dynamic Menu List State with LocalStorage persistence
   const [menuList, setMenuList] = useState<MenuItem[]>(() => {
-    const saved = localStorage.getItem("chilli_try_fry_menu");
-    return saved ? JSON.parse(saved) : menuItems;
+    const saved = localStorage.getItem("hot_n_tasty_menu");
+    return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
   });
 
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -116,7 +119,7 @@ const Index = () => {
   // Admin Handlers
   const handleSaveMenu = (updatedItems: MenuItem[]) => {
     setMenuList(updatedItems);
-    localStorage.setItem("chilli_try_fry_menu", JSON.stringify(updatedItems));
+    localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
     toast.success("Menu changes saved successfully!");
   };
 
@@ -128,7 +131,7 @@ const Index = () => {
   // If Admin Mode is active, render the Admin Dashboard instead of the customer view
   if (isAdminMode) {
     return (
-      <AdminDashboard
+      <HotNTastyAdminDashboard
         items={menuList}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
@@ -137,24 +140,24 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F11] text-zinc-100 font-sans selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-[#0A0A0C] text-zinc-100 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-[#0F0F11]/90 backdrop-blur-md border-b border-zinc-800/80 transition-all">
+      <header className="sticky top-0 z-40 bg-[#0A0A0C]/95 backdrop-blur-md border-b border-zinc-800/80 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 bg-gradient-to-br from-red-700 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
             <div>
-              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-amber-400 to-red-500 bg-clip-text text-transparent">
-                CHILLI TRY FRY
+              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-red-400 to-red-600 bg-clip-text text-transparent">
+                HOT N TASTY ROLL
               </span>
               <span className="block text-[10px] text-zinc-400 tracking-widest uppercase font-bold">
-                Karachi Street Food
+                Gulistan-e-Johar, Karachi
               </span>
             </div>
           </div>
@@ -163,19 +166,19 @@ const Index = () => {
           <nav className="hidden md:flex items-center gap-8">
             <button
               onClick={() => scrollToSection("menu")}
-              className="text-sm font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               Our Menu
             </button>
             <button
               onClick={() => scrollToSection("about")}
-              className="text-sm font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               About Us
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="text-sm font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="text-sm font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               Location & Timings
             </button>
@@ -186,11 +189,11 @@ const Index = () => {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-white transition-all duration-200 hover:border-amber-500/50 group"
+              className="relative p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-white transition-all duration-200 hover:border-red-500/50 group"
             >
-              <ShoppingBag className="w-5 h-5 group-hover:text-amber-500 transition-colors" />
+              <ShoppingBag className="w-5 h-5 group-hover:text-red-500 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-600 to-amber-500 text-white text-[11px] font-bold w-5.5 h-5.5 rounded-full flex items-center justify-center border-2 border-[#0F0F11] animate-bounce">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-700 to-red-500 text-white text-[11px] font-bold w-5.5 h-5.5 rounded-full flex items-center justify-center border-2 border-[#0A0A0C] animate-bounce">
                   {totalCartCount}
                 </span>
               )}
@@ -208,22 +211,22 @@ const Index = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-[#0F0F11] border-b border-zinc-800 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
+          <div className="md:hidden bg-[#0A0A0C] border-b border-zinc-800 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
             <button
               onClick={() => scrollToSection("menu")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               Our Menu
             </button>
             <button
               onClick={() => scrollToSection("about")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               About Us
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-amber-500 transition-colors"
+              className="block w-full text-left py-2 text-base font-semibold text-zinc-300 hover:text-red-500 transition-colors"
             >
               Location & Timings
             </button>
@@ -236,77 +239,93 @@ const Index = () => {
         {/* Background Image with Dark Overlay */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1920&q=80"
-            alt="Sizzling street food cooking"
+            src="https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=1920&q=80"
+            alt="Sizzling paratha rolls cooking"
             className="w-full h-full object-cover object-center scale-105 animate-pulse duration-[8000ms]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F11] via-[#0F0F11]/80 to-transparent" />
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0C] via-[#0A0A0C]/80 to-transparent" />
+          <div className="absolute inset-0 bg-black/70" />
         </div>
 
         {/* Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8">
+          {/* Prominent Trust Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs sm:text-sm font-bold uppercase tracking-wider animate-bounce">
-            <Flame className="w-4 h-4 text-red-500" />
-            Kharadar's Legendary Taste
+            ⭐ 4.0 Rating (1,032+ Google Reviews)
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white leading-tight">
-            Karachi's Ultimate <br />
-            <span className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 bg-clip-text text-transparent">
-              Midnight Sizzle
+            Hot n Tasty Roll <br />
+            <span className="bg-gradient-to-r from-red-500 via-red-400 to-white bg-clip-text text-transparent">
+              "Bringing Out The Best !!!"
             </span>
           </h1>
 
           <p className="text-zinc-300 text-base sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-            Experience the fiery, authentic street flavors of Kharadar. Sizzling BBQ, crispy broasts, loaded fries, and signature wraps crafted to satisfy your late-night cravings.
+            Experience the ultimate taste of Gulistan-e-Johar. Sizzling hot paratha rolls, crispy zingers, juicy burgers, and premium BBQ plates crafted to perfection.
           </p>
+
+          {/* Minimalist Features Icons */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-300 pt-2">
+            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
+              <Coffee className="w-4 h-4 text-red-500" />
+              <span>Happy-Hour Food</span>
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
+              <Wifi className="w-4 h-4 text-red-500" />
+              <span>Free Wi-Fi</span>
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-900/60 px-4 py-2 rounded-full border border-zinc-800">
+              <Smile className="w-4 h-4 text-red-500" />
+              <span>Kids' Menu Available</span>
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => scrollToSection("menu")}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-700 to-red-500 hover:from-red-600 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
             >
               <Utensils className="w-5 h-5" />
-              View Full Menu
+              Order Now
             </button>
             <button
               onClick={() => scrollToSection("location")}
               className="w-full sm:w-auto px-8 py-4 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <MapPin className="w-5 h-5 text-amber-500" />
-              Find Us in Kharadar
+              <MapPin className="w-5 h-5 text-red-500" />
+              Find Us in Johar
             </button>
           </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-12 border-t border-zinc-800/50">
             <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-amber-500">4.0 PM</p>
+              <p className="text-2xl sm:text-3xl font-black text-red-500">4:00 PM</p>
               <p className="text-xs text-zinc-400 mt-1">Opening Time</p>
             </div>
             <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
               <p className="text-2xl sm:text-3xl font-black text-red-500">3:30 AM</p>
-              <p className="text-xs text-zinc-400 mt-1">Weekend Closing</p>
+              <p className="text-xs text-zinc-400 mt-1">Closing Time</p>
             </div>
             <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-amber-500">100%</p>
-              <p className="text-xs text-zinc-400 mt-1">Fresh & Halal</p>
+              <p className="text-2xl sm:text-3xl font-black text-red-500">1,032+</p>
+              <p className="text-xs text-zinc-400 mt-1">Google Reviews</p>
             </div>
             <div className="p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-              <p className="text-2xl sm:text-3xl font-black text-red-500">Fast</p>
-              <p className="text-xs text-zinc-400 mt-1">WhatsApp Checkout</p>
+              <p className="text-2xl sm:text-3xl font-black text-red-500">Johar</p>
+              <p className="text-xs text-zinc-400 mt-1">Block 17, Karachi</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Interactive Menu Section */}
-      <section id="menu" className="py-24 bg-[#0A0A0C] border-y border-zinc-900">
+      <section id="menu" className="py-24 bg-[#0F0F11] border-y border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               Freshly Prepared
             </div>
@@ -314,7 +333,7 @@ const Index = () => {
               Explore Our Sizzling Menu
             </h2>
             <p className="text-zinc-400 text-sm sm:text-base">
-              From spicy Arabic Shawarmas to loaded lava fries and premium burgers, we have something to satisfy every craving. Filter by category or search below.
+              From spicy Chicken Rolls to loaded burgers and premium BBQ plates, we have something to satisfy every craving. Filter by category or search below.
             </p>
 
             {/* Search Bar */}
@@ -322,10 +341,10 @@ const Index = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search for burgers, rolls, deals..."
+                placeholder="Search for rolls, burgers, deals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-sm"
+                className="w-full pl-12 pr-4 py-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-sm"
               />
               {searchQuery && (
                 <button
@@ -340,13 +359,13 @@ const Index = () => {
 
           {/* Category Tabs */}
           <div className="flex overflow-x-auto pb-4 mb-12 gap-2.5 no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
-            {CATEGORIES.map((category) => (
+            {HOT_N_TASTY_CATEGORIES.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
                   selectedCategory === category.id
-                    ? "bg-gradient-to-r from-red-600 to-amber-500 text-white shadow-lg shadow-red-600/20 scale-105"
+                    ? "bg-gradient-to-r from-red-700 to-red-500 text-white shadow-lg shadow-red-600/20 scale-105"
                     : "bg-zinc-900/60 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800/80"
                 }`}
               >
@@ -364,7 +383,7 @@ const Index = () => {
                   setSelectedCategory("all");
                   setSearchQuery("");
                 }}
-                className="mt-4 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-sm transition-colors"
+                className="mt-4 px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-colors"
               >
                 Reset Filters
               </button>
@@ -384,15 +403,15 @@ const Index = () => {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <span className="absolute top-3 right-3 px-3 py-1 bg-black/80 backdrop-blur-md border border-zinc-800 rounded-full text-xs font-bold text-amber-400">
-                      {CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
+                    <span className="absolute top-3 right-3 px-3 py-1 bg-black/80 backdrop-blur-md border border-zinc-800 rounded-full text-xs font-bold text-red-400">
+                      {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
                     </span>
                   </div>
 
                   {/* Content */}
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <h3 className="font-bold text-lg text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                      <h3 className="font-bold text-lg text-white group-hover:text-red-400 transition-colors line-clamp-1">
                         {item.name}
                       </h3>
                       <p className="text-zinc-400 text-xs sm:text-sm line-clamp-2 leading-relaxed">
@@ -409,7 +428,7 @@ const Index = () => {
                       </div>
                       <button
                         onClick={() => handleAddToCart(item)}
-                        className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-xs transition-all duration-200 flex items-center gap-1.5 active:scale-95"
+                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition-all duration-200 flex items-center gap-1.5 active:scale-95"
                       >
                         <Plus className="w-4 h-4" />
                         Add to Cart
@@ -424,7 +443,7 @@ const Index = () => {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="py-24 bg-[#0F0F11] relative overflow-hidden">
+      <section id="about" className="py-24 bg-[#0A0A0C] relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -436,21 +455,21 @@ const Index = () => {
               </div>
               <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
                 The Story of <br />
-                <span className="bg-gradient-to-r from-amber-400 to-red-500 bg-clip-text text-transparent">
-                  Chilli Try Fry
+                <span className="bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">
+                  Hot n Tasty Roll
                 </span>
               </h2>
               <p className="text-zinc-300 leading-relaxed">
-                Nestled in the heart of Karachi's historic food hub, Kharadar, Chilli Try Fry has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
+                Located in the bustling heart of Gulistan-e-Johar, Hot n Tasty Roll has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
               </p>
               <p className="text-zinc-400 leading-relaxed">
-                Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Arabic Shawarmas, crispy golden Golden Broasts, or loaded lava fries, every bite is a celebration of Karachi's vibrant culinary spirit.
+                Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
               </p>
 
               {/* Features Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 shrink-0">
+                  <div className="p-2 bg-red-500/10 rounded-lg text-red-500 shrink-0">
                     <ThumbsUp className="w-5 h-5" />
                   </div>
                   <div>
@@ -495,9 +514,9 @@ const Index = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-red-600 to-amber-500 p-6 rounded-2xl text-white shadow-xl hidden sm:block max-w-[200px]">
-                <p className="text-3xl font-black">10k+</p>
-                <p className="text-xs font-bold text-white/80 mt-1">Happy Karachi Foodies Served</p>
+              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-red-700 to-red-500 p-6 rounded-2xl text-white shadow-xl hidden sm:block max-w-[200px]">
+                <p className="text-3xl font-black">1,032+</p>
+                <p className="text-xs font-bold text-white/80 mt-1">Happy Google Reviews</p>
               </div>
             </div>
           </div>
@@ -505,10 +524,10 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 bg-[#0A0A0C] border-t border-zinc-900">
+      <section className="py-24 bg-[#0F0F11] border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
               <Star className="w-3.5 h-3.5 fill-current" />
               Customer Reviews
             </div>
@@ -516,67 +535,67 @@ const Index = () => {
               Loved by Karachiites
             </h2>
             <p className="text-zinc-400 text-sm sm:text-base">
-              Don't just take our word for it. Here is what our regular foodies from Kharadar and beyond have to say about Chilli Try Fry.
+              Don't just take our word for it. Here is what our regular foodies from Gulistan-e-Johar and beyond have to say about Hot n Tasty Roll.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
-              <div className="flex items-center gap-1 text-amber-500">
+              <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
               <p className="text-zinc-300 text-sm italic leading-relaxed">
-                "The Zinger Shawarma with Cheese is absolutely out of this world! The spices are perfectly balanced, and the garlic sauce is so rich. Best midnight spot in Kharadar!"
+                "The Chicken Garlic Mayo Roll is absolutely out of this world! The paratha is so crispy and the garlic mayo is incredibly rich. Best midnight spot in Johar!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-amber-500">
+                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
                   AH
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">Asad Hussain</h4>
-                  <p className="text-xs text-zinc-500">Kharadar, Karachi</p>
+                  <p className="text-xs text-zinc-500">Gulistan-e-Johar, Karachi</p>
                 </div>
               </div>
             </div>
 
             <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
-              <div className="flex items-center gap-1 text-amber-500">
+              <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
               <p className="text-zinc-300 text-sm italic leading-relaxed">
-                "We ordered Deal 11 for our late-night gaming session. The loaded zinger burger and beef roll were incredibly juicy. Delivery was fast and the food arrived piping hot!"
+                "We ordered Festival Deal 1 for our late-night gaming session. The rolls were incredibly juicy and flavorful. Delivery was fast and the food arrived piping hot!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-amber-500">
+                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
                   SF
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">Sana Fatima</h4>
-                  <p className="text-xs text-zinc-500">Clifton, Karachi</p>
+                  <p className="text-xs text-zinc-500">Block 13, Karachi</p>
                 </div>
               </div>
             </div>
 
             <div className="p-6 bg-zinc-900/40 rounded-2xl border border-zinc-800/60 space-y-4">
-              <div className="flex items-center gap-1 text-amber-500">
+              <div className="flex items-center gap-1 text-red-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
               </div>
               <p className="text-zinc-300 text-sm italic leading-relaxed">
-                "Lava Pizza Fries are a masterpiece. The cheese pull is insane and the spicy sauce has just the right kick. Highly recommend Chilli Try Fry to everyone!"
+                "The Chicken Malai Boti Roll is a masterpiece. The meat is so tender it melts in your mouth. Highly recommend Hot n Tasty Roll to everyone!"
               </p>
               <div className="flex items-center gap-3 pt-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-amber-500">
+                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-red-500">
                   ZK
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">Zain Khan</h4>
-                  <p className="text-xs text-zinc-500">DHA, Karachi</p>
+                  <p className="text-xs text-zinc-500">Block 17, Karachi</p>
                 </div>
               </div>
             </div>
@@ -585,13 +604,13 @@ const Index = () => {
       </section>
 
       {/* Location & Timing Footer Section */}
-      <section id="location" className="py-24 bg-[#0F0F11] border-t border-zinc-900">
+      <section id="location" className="py-24 bg-[#0A0A0C] border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Details */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider">
                   <MapPin className="w-3.5 h-3.5" />
                   Visit Us
                 </div>
@@ -599,23 +618,23 @@ const Index = () => {
                   Where to Find Us
                 </h2>
                 <p className="text-zinc-400 text-sm sm:text-base">
-                  We are located in the legendary Kharadar food street, Karachi. Stop by for a sizzling hot meal straight from the wok!
+                  We are located in the legendary Noman Grand City, Block 17, Gulistan-e-Johar, Karachi. Stop by for a sizzling hot meal straight from the wok!
                 </p>
               </div>
 
               {/* Contact Info Cards */}
               <div className="space-y-4">
                 <div className="flex gap-4 p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/60">
-                  <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 shrink-0">
+                  <div className="p-3 bg-red-500/10 rounded-xl text-red-500 shrink-0">
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div>
                     <h4 className="font-bold text-white text-sm">Address</h4>
                     <p className="text-zinc-300 text-sm mt-1">
-                      Paria St, near Star Medical, Kharadar Ghulam Hussain Kasim Quarters, Karachi
+                      Noman Grand City, Block 17, Gulistan-e-Johar, Karachi
                     </p>
-                    <span className="inline-block text-xs text-amber-500 font-semibold mt-1">
-                      📍 Located in Kharadar food street
+                    <span className="inline-block text-xs text-red-500 font-semibold mt-1">
+                      📍 Located in Gulistan-e-Johar
                     </span>
                   </div>
                 </div>
@@ -628,12 +647,8 @@ const Index = () => {
                     <h4 className="font-bold text-white text-sm">Operational Hours</h4>
                     <div className="text-zinc-300 text-sm mt-1 space-y-1">
                       <p className="flex justify-between gap-4">
-                        <span>Monday – Thursday:</span>
-                        <span className="font-semibold text-white">4:00 PM – 2:00 AM</span>
-                      </p>
-                      <p className="flex justify-between gap-4">
-                        <span>Friday – Sunday:</span>
-                        <span className="font-semibold text-amber-400">4:00 PM – 3:30 AM</span>
+                        <span>Open Daily:</span>
+                        <span className="font-semibold text-white">4:00 PM – 3:30 AM</span>
                       </p>
                     </div>
                   </div>
@@ -646,10 +661,10 @@ const Index = () => {
                   <div>
                     <h4 className="font-bold text-white text-sm">Phone / Contact</h4>
                     <p className="text-zinc-300 text-sm mt-1">
-                      0331-2400434
+                      +92 300 3919005
                     </p>
                     <a
-                      href="tel:03312400434"
+                      href="tel:+923003919005"
                       className="inline-block text-xs text-emerald-500 font-semibold mt-1 hover:underline"
                     >
                       Call Now to Order
@@ -664,17 +679,17 @@ const Index = () => {
               {/* Decorative Map Background Pattern */}
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]" />
               
-              <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 relative z-10">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 relative z-10">
                 <MapPin className="w-8 h-8" />
               </div>
               <div className="relative z-10 space-y-2">
-                <h3 className="font-bold text-lg text-white">Kharadar Food Street</h3>
+                <h3 className="font-bold text-lg text-white">Noman Grand City</h3>
                 <p className="text-sm text-zinc-400 max-w-xs mx-auto">
-                  Paria St, near Star Medical, Kharadar Ghulam Hussain Kasim Quarters, Karachi
+                  Block 17, Gulistan-e-Johar, Karachi
                 </p>
               </div>
               <a
-                href="https://maps.google.com/?q=Paria+St,+near+Star+Medical,+Kharadar+Ghulam+Hussain+Kasim+Quarters,+Karachi"
+                href="https://maps.google.com/?q=Noman+Grand+City,+Block+17,+Gulistan-e-Johar,+Karachi"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="relative z-10 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl text-sm transition-colors border border-zinc-700 flex items-center gap-2"
@@ -691,22 +706,22 @@ const Index = () => {
       <footer className="bg-[#0A0A0C] border-t border-zinc-900 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <div className="flex items-center justify-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-amber-500 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-red-700 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-black tracking-wider bg-gradient-to-r from-white via-amber-400 to-red-500 bg-clip-text text-transparent">
-              CHILLI TRY FRY
+            <span className="text-lg font-black tracking-wider bg-gradient-to-r from-white via-red-400 to-red-600 bg-clip-text text-transparent">
+              HOT N TASTY ROLL
             </span>
           </div>
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
-            Karachi's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
+            Gulistan-e-Johar's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
           </p>
           
           {/* Staff Login Link */}
           <div className="pt-2">
             <button
               onClick={() => setIsLoginModalOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-amber-500 transition-colors font-semibold"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-red-500 transition-colors font-semibold"
             >
               <Lock className="w-3 h-3" />
               Staff Login
@@ -714,22 +729,15 @@ const Index = () => {
           </div>
 
           <div className="border-t border-zinc-900 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-600 text-xs">
-            <p>© {new Date().getFullYear()} Chilli Try Fry. All rights reserved.</p>
+            <p>© 2026 Hot n Tasty Roll. All Rights Reserved. | Developed by ByteCraft Solutions</p>
             <p>Designed for Karachi's ultimate food lovers.</p>
           </div>
           <MadeWithDyad />
         </div>
       </footer>
 
-      {/* Minimalist Bottom Footer */}
-      <div className="bg-[#08080A] border-t border-zinc-900/60 py-4 text-center">
-        <p className="text-[11px] text-zinc-500 tracking-wide font-medium">
-          © 2026 Chilli Try Fry. All Rights Reserved. | Developed by ByteCraft Solutions
-        </p>
-      </div>
-
       {/* Shopping Cart Drawer */}
-      <CartDrawer
+      <HotNTastyCartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
