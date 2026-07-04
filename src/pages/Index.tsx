@@ -249,7 +249,7 @@ const Index = () => {
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8">
           {/* Prominent Trust Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-600 text-xs sm:text-sm font-bold uppercase tracking-wider animate-bounce">
-            ⭐ 4.0 Rating (1,032+ Google Reviews)
+            ⭐ House Of Food
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-900 leading-tight">
@@ -659,14 +659,24 @@ const Index = () => {
                   <div>
                     <h4 className="font-bold text-zinc-900 text-sm">Phone / Contact</h4>
                     <p className="text-zinc-700 text-sm mt-1">
-                      +92 300 3919005
+                      +92 300 3919005 <br />
+                      03332229876
                     </p>
-                    <a
-                      href="tel:+923003919005"
-                      className="inline-block text-xs text-emerald-600 font-semibold mt-1 hover:underline"
-                    >
-                      Call Now to Order
-                    </a>
+                    <div className="flex gap-3 mt-1">
+                      <a
+                        href="tel:+923003919005"
+                        className="text-xs text-emerald-600 font-semibold hover:underline"
+                      >
+                        Call +92 300 3919005
+                      </a>
+                      <span className="text-zinc-300">|</span>
+                      <a
+                        href="tel:03332229876"
+                        className="text-xs text-emerald-600 font-semibold hover:underline"
+                      >
+                        Call 03332229876
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
