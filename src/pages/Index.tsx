@@ -18,7 +18,8 @@ import {
   Lock,
   Wifi,
   Smile,
-  Coffee
+  Coffee,
+  ArrowRight
 } from "lucide-react";
 import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/data/hotNTastyMenu";
 import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
@@ -44,6 +45,7 @@ const Index = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showCartNotification, setShowCartNotification] = useState(false);
 
   // Admin Panel States
   const [isAdminMode, setIsAdminMode] = useState(false);
@@ -74,11 +76,12 @@ const Index = () => {
       toast.success(`Added ${item.name} to cart!`);
       return [...prev, { item, quantity: 1 }];
     });
+    setShowCartNotification(true);
   };
 
   const handleUpdateQuantity = (itemId: string, delta: number) => {
     setCartItems((prev) => {
-      return prev
+      const updated = prev
         .map((i) => {
           if (i.item.id === itemId) {
             const newQty = i.quantity + delta;
@@ -87,6 +90,11 @@ const Index = () => {
           return i;
         })
         .filter((i) => i.quantity > 0);
+      
+      if (updated.length === 0) {
+        setShowCartNotification(false);
+      }
+      return updated;
     });
   };
 
@@ -96,16 +104,22 @@ const Index = () => {
       if (item) {
         toast.error(`Removed ${item.item.name} from cart`);
       }
-      return prev.filter((i) => i.item.id !== itemId);
+      const updated = prev.filter((i) => i.item.id !== itemId);
+      if (updated.length === 0) {
+        setShowCartNotification(false);
+      }
+      return updated;
     });
   };
 
   const handleClearCart = () => {
     setCartItems([]);
+    setShowCartNotification(false);
     toast.info("Cart cleared");
   };
 
   const totalCartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  const cartTotal = cartItems.reduce((sum, i) => sum + i.item.price * i.quantity, 0);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -142,16 +156,16 @@ const Index = () => {
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Logo */}
           <div
             onClick={() => scrollToSection("hero")}
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
           >
             <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <span className="text-xl font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
                 HOT N TASTY ROLL
               </span>
@@ -161,8 +175,8 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-6 shrink-0">
             <button
               onClick={() => scrollToSection("menu")}
               className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
@@ -183,16 +197,36 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Actions */}
-          <div className="flex items-center gap-4">
+          {/* Search Bar & Actions */}
+          <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
+            {/* Relocated Search Bar */}
+            <div className="relative w-full max-w-[240px] sm:max-w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search menu..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-xs sm:text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group"
+              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0"
             >
               <ShoppingBag className="w-5 h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-600 to-red-500 text-white text-[11px] font-bold w-5.5 h-5.5 rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-md">
                   {totalCartCount}
                 </span>
               )}
@@ -201,7 +235,7 @@ const Index = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors"
+              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -210,7 +244,7 @@ const Index = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
+          <div className="lg:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
             <button
               onClick={() => scrollToSection("menu")}
               className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
@@ -234,7 +268,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden py-20 bg-white">
+      <section id="hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden py-16 bg-white">
         {/* Background Image with Red/White Overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -246,7 +280,7 @@ const Index = () => {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center space-y-8">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
           {/* Prominent Trust Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-600 text-xs sm:text-sm font-bold uppercase tracking-wider animate-bounce">
             ⭐ House Of Food
@@ -264,7 +298,7 @@ const Index = () => {
           </p>
 
           {/* Minimalist Features Icons */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-zinc-700 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-zinc-700 pt-2">
             <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
               <Coffee className="w-4 h-4 text-red-600" />
               <span className="font-semibold">Happy-Hour Food</span>
@@ -276,6 +310,31 @@ const Index = () => {
             <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
               <Smile className="w-4 h-4 text-red-600" />
               <span className="font-semibold">Kids' Menu Available</span>
+            </div>
+          </div>
+
+          {/* Restructured Category Navigation (Grid/Flex Wrap, No Horizontal Scroll) */}
+          <div className="pt-8 max-w-5xl mx-auto">
+            <div className="text-center mb-4">
+              <span className="text-xs font-black text-red-600 uppercase tracking-widest">Select a Category to Browse</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+              {HOT_N_TASTY_CATEGORIES.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    scrollToSection("menu");
+                  }}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center gap-1.5 shadow-sm border ${
+                    selectedCategory === category.id
+                      ? "bg-gradient-to-r from-red-600 to-red-500 text-white border-red-600 scale-105"
+                      : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -295,26 +354,6 @@ const Index = () => {
               Find Us in Johar
             </button>
           </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-12 border-t border-zinc-200">
-            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-black text-red-600">4:00 PM</p>
-              <p className="text-xs text-zinc-500 mt-1 font-bold">Opening Time</p>
-            </div>
-            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-black text-red-600">3:30 AM</p>
-              <p className="text-xs text-zinc-500 mt-1 font-bold">Closing Time</p>
-            </div>
-            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-black text-red-600">1,032+</p>
-              <p className="text-xs text-zinc-500 mt-1 font-bold">Google Reviews</p>
-            </div>
-            <div className="p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
-              <p className="text-2xl sm:text-3xl font-black text-red-600">Johar</p>
-              <p className="text-xs text-zinc-500 mt-1 font-bold">Block 17, Karachi</p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -331,45 +370,8 @@ const Index = () => {
               Explore Our Sizzling Menu
             </h2>
             <p className="text-zinc-600 text-sm sm:text-base">
-              From spicy Chicken Rolls to loaded burgers and premium BBQ plates, we have something to satisfy every craving. Filter by category or search below.
+              From spicy Chicken Rolls to loaded burgers and premium BBQ plates, we have something to satisfy every craving. Filter by category or search above.
             </p>
-
-            {/* Search Bar */}
-            <div className="relative max-w-md mx-auto mt-8">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search for rolls, burgers, deals..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-sm shadow-sm"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Category Tabs */}
-          <div className="flex overflow-x-auto pb-4 mb-12 gap-2.5 no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
-            {HOT_N_TASTY_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
-                  selectedCategory === category.id
-                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-600/20 scale-105"
-                    : "bg-white hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 border border-zinc-200 shadow-sm"
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
           </div>
 
           {/* Food Grid */}
@@ -760,6 +762,38 @@ const Index = () => {
         onClose={() => setIsLoginModalOpen(false)}
         onSuccess={() => setIsAdminMode(true)}
       />
+
+      {/* Smooth Animated Slide-up Cart Notification Bar */}
+      {showCartNotification && cartItems.length > 0 && !isCartOpen && (
+        <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[400px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center text-red-500 shrink-0">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Item added to cart!</p>
+              <p className="text-sm font-black text-white truncate">
+                Current Total: <span className="text-red-500">Rs. {cartTotal}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1 shadow-lg shadow-red-600/20"
+            >
+              Checkout
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setShowCartNotification(false)}
+              className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
