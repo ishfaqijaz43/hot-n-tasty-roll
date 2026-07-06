@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText } from "lucide-react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Key, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface HotNTastyAdminDashboardProps {
@@ -11,6 +11,16 @@ interface HotNTastyAdminDashboardProps {
 
 export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem("imgbb_api_key") || "";
+  });
+  const [isUploading, setIsUploading] = useState<string | null>(null); // 'new' or item ID
+
+  // Save API Key to LocalStorage when changed
+  const handleApiKeyChange = (value: string) => {
+    setApiKey(value);
+    localStorage.setItem("imgbb_api_key", value);
+  };
 
   // New Item Form State
   const [newItem, setNewItem] = useState({
@@ -37,6 +47,49 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
   const handleDeleteItem = (id: string) => {
     setLocalItems((prev) => prev.filter((item) => item.id !== id));
     toast.info("Item removed from local list. Click 'Save Changes' to persist.");
+  };
+
+  // Handle Image Upload to ImgBB
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetId: 'new' | string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!apiKey.trim()) {
+      toast.error("Please configure your ImgBB API Key first to upload images.");
+      return;
+    }
+
+    setIsUploading(targetId);
+    const toastId = toast.loading("Uploading image to ImgBB...");
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey.trim()}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data?.url) {
+        const uploadedUrl = data.data.url;
+        if (targetId === 'new') {
+          setNewItem(prev => ({ ...prev, image: uploadedUrl }));
+        } else {
+          handleImageChange(targetId, uploadedUrl);
+        }
+        toast.success("Image uploaded successfully!", { id: toastId });
+      } else {
+        throw new Error(data.error?.message || "Failed to upload image");
+      }
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload image. Please check your API key.", { id: toastId });
+    } finally {
+      setIsUploading(null);
+    }
   };
 
   const handleAddNewItem = (e: React.FormEvent) => {
@@ -98,6 +151,31 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
               <LogOut className="w-4 h-4" />
               Log Out
             </button>
+          </div>
+        </div>
+
+        {/* ImgBB API Key Configuration */}
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
+              <Key className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">ImgBB API Key Configuration</h2>
+              <p className="text-xs text-zinc-400">Configure your ImgBB API key to enable direct image uploads from your phone gallery.</p>
+            </div>
+          </div>
+          <div className="max-w-xl">
+            <input
+              type="password"
+              placeholder="Paste your ImgBB API Key here..."
+              value={apiKey}
+              onChange={(e) => handleApiKeyChange(e.target.value)}
+              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm tracking-wider"
+            />
+            <p className="text-[11px] text-zinc-500 mt-1.5">
+              Don't have a key? Get a free API key from <a href="https://api.imgbb.com/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:underline">api.imgbb.com</a>.
+            </p>
           </div>
         </div>
 
@@ -171,15 +249,32 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Image className="w-3 h-3" /> Image URL
+                <Image className="w-3 h-3" /> Image URL / Upload
               </label>
-              <input
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                value={newItem.image}
-                onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
-                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={newItem.image}
+                  onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
+                  className="flex-1 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
+                />
+                <label className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-white text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-colors shrink-0">
+                  {isUploading === 'new' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, 'new')}
+                    className="hidden"
+                    disabled={isUploading !== null}
+                  />
+                </label>
+              </div>
             </div>
 
             <div className="md:col-span-2 lg:col-span-3 pt-2">
@@ -237,13 +332,30 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                     />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL</span>
-                    <input
-                      type="text"
-                      value={item.image}
-                      onChange={(e) => handleImageChange(item.id, e.target.value)}
-                      className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-500"
-                    />
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL / Upload</span>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={item.image}
+                        onChange={(e) => handleImageChange(item.id, e.target.value)}
+                        className="flex-1 px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-500"
+                      />
+                      <label className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-white text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors shrink-0">
+                        {isUploading === item.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, item.id)}
+                          className="hidden"
+                          disabled={isUploading !== null}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 
