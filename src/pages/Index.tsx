@@ -250,7 +250,7 @@ const Index = () => {
 
               {/* Autocomplete Suggestions Dropdown */}
               {isSearchFocused && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto">
                   {searchSuggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
@@ -259,10 +259,11 @@ const Index = () => {
                         setIsSearchFocused(false);
                         scrollToSection("menu");
                       }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-medium transition-colors flex items-center justify-between border-b border-zinc-100 last:border-0"
+                      className="w-full text-left px-4 py-3 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-bold transition-colors border-b border-zinc-100 last:border-0 block"
                     >
-                      <span className="truncate">{suggestion.name}</span>
-                      <span className="text-xs text-red-600 font-bold shrink-0 ml-2">Rs {suggestion.price}</span>
+                      <span className="break-words block leading-tight">
+                        {suggestion.name} - Rs. {suggestion.price}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -821,7 +822,7 @@ const Index = () => {
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-black text-white truncate">
+              <p className="text-sm font-black text-white">
                 Item added - Rs. {lastAddedPrice}
               </p>
             </div>
