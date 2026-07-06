@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   Flame,
   MapPin,
@@ -46,6 +46,11 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
+  const [lastAddedPrice, setLastAddedPrice] = useState<number | null>(null);
+
+  // Search Autocomplete States
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Admin Panel States
   const [isAdminMode, setIsAdminMode] = useState(false);
@@ -63,19 +68,42 @@ const Index = () => {
     });
   }, [menuList, selectedCategory, searchQuery]);
 
+  // Autocomplete suggestions
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return menuList
+      .filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 5);
+  }, [menuList, searchQuery]);
+
+  // Close search suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Cart Handlers
   const handleAddToCart = (item: MenuItem) => {
     setCartItems((prev) => {
       const existing = prev.find((i) => i.item.id === item.id);
       if (existing) {
-        toast.success(`Increased quantity of ${item.name}`);
         return prev.map((i) =>
           i.item.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
-      toast.success(`Added ${item.name} to cart!`);
       return [...prev, { item, quantity: 1 }];
     });
+    setLastAddedPrice(item.price);
     setShowCartNotification(true);
   };
 
@@ -100,10 +128,6 @@ const Index = () => {
 
   const handleRemoveItem = (itemId: string) => {
     setCartItems((prev) => {
-      const item = prev.find((i) => i.item.id === itemId);
-      if (item) {
-        toast.error(`Removed ${item.item.name} from cart`);
-      }
       const updated = prev.filter((i) => i.item.id !== itemId);
       if (updated.length === 0) {
         setShowCartNotification(false);
@@ -119,7 +143,6 @@ const Index = () => {
   };
 
   const totalCartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
-  const cartTotal = cartItems.reduce((sum, i) => sum + i.item.price * i.quantity, 0);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -199,23 +222,50 @@ const Index = () => {
 
           {/* Search Bar & Actions */}
           <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
-            {/* Relocated Search Bar */}
-            <div className="relative w-full max-w-[240px] sm:max-w-[280px]">
+            {/* Relocated Search Bar with Autocomplete */}
+            <div ref={searchContainerRef} className="relative w-full max-w-[240px] sm:max-w-[280px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search menu..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchFocused(true);
+                }}
+                onFocus={() => setIsSearchFocused(true)}
                 className="w-full pl-9 pr-8 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-xs sm:text-sm"
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setIsSearchFocused(false);
+                  }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
                 >
                   ✕
                 </button>
+              )}
+
+              {/* Autocomplete Suggestions Dropdown */}
+              {isSearchFocused && searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  {searchSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id}
+                      onMouseDown={() => {
+                        setSearchQuery(suggestion.name);
+                        setIsSearchFocused(false);
+                        scrollToSection("menu");
+                      }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-medium transition-colors flex items-center justify-between border-b border-zinc-100 last:border-0"
+                    >
+                      <span className="truncate">{suggestion.name}</span>
+                      <span className="text-xs text-red-600 font-bold shrink-0 ml-2">Rs {suggestion.price}</span>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -765,15 +815,14 @@ const Index = () => {
 
       {/* Smooth Animated Slide-up Cart Notification Bar */}
       {showCartNotification && cartItems.length > 0 && !isCartOpen && (
-        <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[400px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
+        <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[320px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 bg-red-600/20 rounded-xl flex items-center justify-center text-red-500 shrink-0">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Item added to cart!</p>
               <p className="text-sm font-black text-white truncate">
-                Current Total: <span className="text-red-500">Rs. {cartTotal}</span>
+                Item added - Rs. {lastAddedPrice}
               </p>
             </div>
           </div>

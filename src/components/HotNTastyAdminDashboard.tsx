@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Key, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
 
 interface HotNTastyAdminDashboardProps {
   items: MenuItem[];
@@ -11,16 +13,7 @@ interface HotNTastyAdminDashboardProps {
 
 export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem("imgbb_api_key") || "";
-  });
   const [isUploading, setIsUploading] = useState<string | null>(null); // 'new' or item ID
-
-  // Save API Key to LocalStorage when changed
-  const handleApiKeyChange = (value: string) => {
-    setApiKey(value);
-    localStorage.setItem("imgbb_api_key", value);
-  };
 
   // New Item Form State
   const [newItem, setNewItem] = useState({
@@ -54,11 +47,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!apiKey.trim()) {
-      toast.error("Please configure your ImgBB API Key first to upload images.");
-      return;
-    }
-
     setIsUploading(targetId);
     const toastId = toast.loading("Uploading image to ImgBB...");
 
@@ -66,7 +54,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey.trim()}`, {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: "POST",
         body: formData,
       });
@@ -86,7 +74,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       }
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload image. Please check your API key.", { id: toastId });
+      toast.error(error.message || "Failed to upload image.", { id: toastId });
     } finally {
       setIsUploading(null);
     }
@@ -151,31 +139,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
               <LogOut className="w-4 h-4" />
               Log Out
             </button>
-          </div>
-        </div>
-
-        {/* ImgBB API Key Configuration */}
-        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
-              <Key className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">ImgBB API Key Configuration</h2>
-              <p className="text-xs text-zinc-400">Configure your ImgBB API key to enable direct image uploads from your phone gallery.</p>
-            </div>
-          </div>
-          <div className="max-w-xl">
-            <input
-              type="password"
-              placeholder="Paste your ImgBB API Key here..."
-              value={apiKey}
-              onChange={(e) => handleApiKeyChange(e.target.value)}
-              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm tracking-wider"
-            />
-            <p className="text-[11px] text-zinc-500 mt-1.5">
-              Don't have a key? Get a free API key from <a href="https://api.imgbb.com/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:underline">api.imgbb.com</a>.
-            </p>
           </div>
         </div>
 
