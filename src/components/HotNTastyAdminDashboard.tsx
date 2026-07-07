@@ -48,7 +48,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     image: "",
   });
 
-  // Direct item image upload via visible file input onChange
+  // Direct item image upload - working logic
   const handleItemImageUpload = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -64,7 +64,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     e.target.value = "";
   };
 
-  // Direct banner image upload via visible file input onChange
+  // Direct banner image upload - FIXED to mirror working item upload logic
   const handleBannerUpload = async (slideIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -76,8 +76,9 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
         return newImages;
       });
       toast.success(`Slide ${slideIndex + 1} banner uploaded successfully!`);
-    } catch (error) {
-      // alert already shown in helper
+    } catch (error: any) {
+      // Add visual error tracking for banner uploads
+      alert("Banner Upload Error: " + (error?.message || error));
     }
     e.target.value = "";
   };
