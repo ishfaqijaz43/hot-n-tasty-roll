@@ -52,6 +52,7 @@ const Index = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -216,7 +217,7 @@ const Index = () => {
             </div>
             <div className="hidden sm:block">
               <span className="text-xl font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                HOT N TASTY ROLL
+                Hot N Tasty Roll BBQ
               </span>
               <span className="block text-[10px] text-gray-500 tracking-widest uppercase font-bold">
                 Gulistan-e-Johar, Karachi
@@ -247,10 +248,12 @@ const Index = () => {
           </nav>
 
           {/* Search Bar & Actions */}
-          <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
-            {/* Relocated Search Bar with Autocomplete */}
-            <div ref={searchContainerRef} className="relative w-full max-w-[240px] sm:max-w-[280px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+          <div className="flex items-center gap-3 flex-1 justify-end">
+            {/* Expanding Search Bar */}
+            <div ref={searchContainerRef} className="relative flex items-center">
+              <Search className="absolute left-3 text-zinc-400 w-4 h-4 cursor-pointer z-10" 
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+              />
               <input
                 type="text"
                 placeholder="Search menu..."
@@ -260,15 +263,20 @@ const Index = () => {
                   setIsSearchFocused(true);
                 }}
                 onFocus={() => setIsSearchFocused(true)}
-                className="w-full pl-9 pr-8 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-xs sm:text-sm"
+                onBlur={() => {
+                  if (!searchQuery) setIsSearchExpanded(false);
+                }}
+                className={`pl-10 pr-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200 ${
+                  isSearchExpanded ? "w-56 sm:w-64 opacity-100" : "w-0 opacity-0 pointer-events-none"
+                }`}
               />
-              {searchQuery && (
+              {searchQuery && isSearchExpanded && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
-                    setIsSearchFocused(false);
+                    setIsSearchExpanded(false);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
+                  className="absolute right-3 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
                 >
                   ✕
                 </button>
@@ -283,6 +291,7 @@ const Index = () => {
                       onMouseDown={() => {
                         setSearchQuery(suggestion.name);
                         setIsSearchFocused(false);
+                        setIsSearchExpanded(false);
                         scrollToSection("menu");
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-bold transition-colors border-b border-zinc-100 last:border-0 block"
@@ -362,7 +371,7 @@ const Index = () => {
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-900 leading-tight">
-            Hot n Tasty Roll <br />
+            Hot N Tasty Roll BBQ <br />
             <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
               "Bringing Out The Best !!!"
             </span>
@@ -515,11 +524,11 @@ const Index = () => {
               <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 leading-tight">
                 The Story of <br />
                 <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                  Hot n Tasty Roll
+                  Hot N Tasty Roll BBQ
                 </span>
               </h2>
               <p className="text-zinc-700 leading-relaxed">
-                Located in the bustling heart of Gulistan-e-Johar, Hot n Tasty Roll has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
+                Located in the bustling heart of Gulistan-e-Johar, Hot N Tasty Roll BBQ has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
               </p>
               <p className="text-zinc-600 leading-relaxed">
                 Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
@@ -594,7 +603,7 @@ const Index = () => {
               Loved by Karachiites
             </h2>
             <p className="text-zinc-600 text-sm sm:text-base">
-              Don't just take our word for it. Here is what our regular foodies from Gulistan-e-Johar and beyond have to say about Hot n Tasty Roll.
+              Don't just take our word for it. Here is what our regular foodies from Gulistan-e-Johar and beyond have to say about Hot N Tasty Roll BBQ.
             </p>
           </div>
 
@@ -646,7 +655,7 @@ const Index = () => {
                 ))}
               </div>
               <p className="text-zinc-700 text-sm italic leading-relaxed">
-                "The Chicken Malai Boti Roll is a masterpiece. The meat is so tender it melts in your mouth. Highly recommend Hot n Tasty Roll to everyone!"
+                "The Chicken Malai Boti Roll is a masterpiece. The meat is so tender it melts in your mouth. Highly recommend Hot N Tasty Roll BBQ to everyone!"
               </p>
               <div className="flex items-center gap-3 pt-2">
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600 border border-red-100">
@@ -779,7 +788,7 @@ const Index = () => {
               <Flame className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              HOT N TASTY ROLL
+              Hot N Tasty Roll BBQ
             </span>
           </div>
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
@@ -798,7 +807,7 @@ const Index = () => {
           </div>
 
           <div className="border-t border-zinc-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500 text-xs">
-            <p>© 2026 Hot n Tasty Roll. All Rights Reserved. | Developed by ByteCraft Solutions</p>
+            <p>© 2026 Hot N Tasty Roll BBQ. All Rights Reserved. | Developed by ByteCraft Solutions</p>
             <p>Designed for Karachi's ultimate food lovers.</p>
           </div>
           <MadeWithDyad />
