@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
-
-const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
+import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
+import Carousel from "./Carousel";
+import SliderControls from "./SliderControls";
 
 interface HotNTastyAdminDashboardProps {
   items: MenuItem[];
@@ -13,12 +13,17 @@ interface HotNTastyAdminDashboardProps {
 
 export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
-  const [isUploading, setIsUploading] = useState<string | null>(null); // 'new' or item ID
+  const [bannerImages, setBannerImages] = useState([
+    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80", // Slide 1
+    "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80", // Slide 2
+    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"  // Slide 3
+  ]);
+  const [isUploading, setIsUploading] = useState<number | null>(null);
+  const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY"; // Replace with your actual ImgBB API key
 
-  // New Item Form State
   const [newItem, setNewItem] = useState({
     name: "",
-    category: "chicken-rolls",
+    category: "burgers",
     description: "",
     price: "",
     image: "",
@@ -42,44 +47,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     toast.info("Item removed from local list. Click 'Save Changes' to persist.");
   };
 
-  // Handle Image Upload to ImgBB
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetId: 'new' | string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(targetId);
-    const toastId = toast.loading("Uploading image to ImgBB...");
-
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.data?.url) {
-        const uploadedUrl = data.data.url;
-        if (targetId === 'new') {
-          setNewItem(prev => ({ ...prev, image: uploadedUrl }));
-        } else {
-          handleImageChange(targetId, uploadedUrl);
-        }
-        toast.success("Image uploaded successfully!", { id: toastId });
-      } else {
-        throw new Error(data.error?.message || "Failed to upload image");
-      }
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload image.", { id: toastId });
-    } finally {
-      setIsUploading(null);
-    }
-  };
-
   const handleAddNewItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.name || !newItem.price) {
@@ -93,13 +60,13 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       category: newItem.category,
       description: newItem.description || "Delicious freshly prepared item.",
       price: parseFloat(newItem.price) || 0,
-      image: newItem.image || "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
+      image: newItem.image || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
     };
 
     setLocalItems((prev) => [createdItem, ...prev]);
     setNewItem({
       name: "",
-      category: "chicken-rolls",
+      category: "burgers",
       description: "",
       price: "",
       image: "",
@@ -111,6 +78,42 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     onSave(localItems);
   };
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>, slideIndex: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(slideIndex);
+    const toastId = toast.loading("Uploading banner image...");
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data?.url) {
+        setBannerImages((prev) => {
+          const newImages = [...prev];
+          newImages[slideIndex] = data.data.url;
+          return newImages;
+        });
+        toast.success("Banner image uploaded successfully!", { id: toastId });
+      } else {
+        throw new Error(data.error?.message || "Failed to upload image");
+      }
+    } catch (error: any) {
+      console.error("Banner upload error:", error);
+      toast.error(error.message || "Failed to upload image.", { id: toastId });
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0F0F11] text-zinc-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-10">
@@ -118,10 +121,10 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-800">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">
-              Hot n Tasty <span className="text-red-500">Admin Panel</span>
+              Staff <span className="text-red-600">Admin Dashboard</span>
             </h1>
             <p className="text-zinc-400 text-sm mt-1">
-              Manage your menu items, update prices, and add new delicious dishes.
+              Manage your Hot n Tasty Roll menu items, update prices, and add new delicious dishes.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -145,7 +148,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
         {/* Add New Item Form */}
         <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
+            <div className="p-2 bg-red-600/10 rounded-lg text-red-600">
               <Plus className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-bold text-white">Add New Menu Item</h2>
@@ -161,7 +164,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                 placeholder="e.g., Special Garlic Mayo Roll"
                 value={newItem.name}
                 onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
+                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm"
                 required
               />
             </div>
@@ -173,7 +176,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
               <select
                 value={newItem.category}
                 onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
+                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm"
               >
                 {HOT_N_TASTY_CATEGORIES.filter((c) => c.id !== "all").map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -192,7 +195,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                 placeholder="e.g., 350"
                 value={newItem.price}
                 onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
+                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm"
                 required
               />
             </div>
@@ -206,38 +209,21 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                 placeholder="Brief description of ingredients or taste..."
                 value={newItem.description}
                 onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
+                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Image className="w-3 h-3" /> Image URL / Upload
+                <Image className="w-3 h-3" /> Image URL
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
-                  value={newItem.image}
-                  onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
-                  className="flex-1 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-500 text-sm"
-                />
-                <label className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-white text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-colors shrink-0">
-                  {isUploading === 'new' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  Upload
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, 'new')}
-                    className="hidden"
-                    disabled={isUploading !== null}
-                  />
-                </label>
-              </div>
+              <input
+                type="url"
+                placeholder="https://images.unsplash.com/..."
+                value={newItem.image}
+                onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
+                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm"
+              />
             </div>
 
             <div className="md:col-span-2 lg:col-span-3 pt-2">
@@ -250,6 +236,43 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Banner Management Section */}
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-red-600/10 rounded-lg text-red-600">
+              <Image className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Manage Homepage Banners</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {["Slide 1", "Slide 2", "Slide 3"].map((slide, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <label className="text-sm font-bold text-zinc-500">
+                  {slide}
+                </label>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleBannerUpload(e, index)}
+                    className="hidden"
+                    disabled={isUploading !== null}
+                  />
+                  <label className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-white text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-colors shrink-0">
+                    Upload Image
+                    {isUploading === index ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Menu Items List */}
@@ -291,34 +314,17 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                       type="number"
                       value={item.price}
                       onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                      className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-500"
+                      className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600"
                     />
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL / Upload</span>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={item.image}
-                        onChange={(e) => handleImageChange(item.id, e.target.value)}
-                        className="flex-1 px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-500"
-                      />
-                      <label className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-white text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors shrink-0">
-                        {isUploading === item.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="w-3.5 h-3.5" />
-                        )}
-                        Upload
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, item.id)}
-                          className="hidden"
-                          disabled={isUploading !== null}
-                        />
-                      </label>
-                    </div>
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL</span>
+                    <input
+                      type="text"
+                      value={item.image}
+                      onChange={(e) => handleImageChange(item.id, e.target.value)}
+                      className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600"
+                    />
                   </div>
                 </div>
 

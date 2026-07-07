@@ -1089,7 +1089,7 @@ export const defaultHotNTastyMenuItems: MenuItem[] = [
   },
   {
     id: "rice-counter-5",
-    name: "Chicken Chilli Garlic Rice",
+    name: "Chicken Chilli Garlic with Rice",
     price: 750,
     description: "Spicy chicken chilli garlic gravy served with fried rice.",
     category: "chinese-rice-counter",
