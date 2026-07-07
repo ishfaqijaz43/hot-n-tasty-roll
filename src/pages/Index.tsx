@@ -216,7 +216,7 @@ const Index = () => {
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
             <div className="hidden sm:block">
-              {/* Replace text with logo image */}
+              {/* Logo image - using the uploaded file from public folder */}
               <img 
                 src="/logo.jpg" 
                 alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
@@ -370,11 +370,11 @@ const Index = () => {
 
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
-          {/* Replace text with logo image */}
+          {/* Logo image in hero section */}
           <img 
             src="/logo.jpg" 
             alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
-            className="h-16 w-auto object-contain mb-4" 
+            className="h-16 w-auto object-contain mb-4 mx-auto" 
           />
           <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
             "Bringing Out The Best !!!"
@@ -399,71 +399,27 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Food Grid */}
-          {filteredItems.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-              <p className="text-zinc-500 text-lg">No items found matching your criteria.</p>
+          {/* Category Filter Buttons - THIS IS THE MENU SECTION CATEGORIES */}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
+            {HOT_N_TASTY_CATEGORIES.map((category) => (
               <button
+                key={category.id}
                 onClick={() => {
-                  setSelectedCategory("all");
-                  setSearchQuery("");
+                  setSelectedCategory(category.id);
+                  scrollToSection("menu");
                 }}
-                className="mt-4 px-6 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-colors"
+                className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
+                  selectedCategory === category.id
+                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white border-red-600 scale-105"
+                    : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                }`}
               >
-                Reset Filters
+                {category.name}
               </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="group bg-white rounded-2xl border border-zinc-200 overflow-hidden hover:border-red-500/50 transition-all duration-300 flex flex-col hover:scale-[1.02] hover:shadow-xl shadow-sm"
-                >
-                  {/* Image Container */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <span className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-md border border-zinc-200 rounded-full text-xs font-bold text-red-600 shadow-sm">
-                      {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
-                    </span>
-                  </div>
+            ))}
+          </div>
 
-                  {/* Content */}
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-lg text-zinc-900 group-hover:text-red-600 transition-colors line-clamp-1">
-                        {item.name}
-                      </h3>
-                      <p className="text-zinc-600 text-sm line-clamp-2 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Price</span>
-                        <span className="text-xl font-black text-red-600">
-                          Rs {item.price}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Food Grid */}
         </div>
       </section>
 
@@ -744,7 +700,7 @@ const Index = () => {
             <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            {/* Replace text with logo image */}
+            {/* Logo image in footer */}
             <img 
               src="/logo.jpg" 
               alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
