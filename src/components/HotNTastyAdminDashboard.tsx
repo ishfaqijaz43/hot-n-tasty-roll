@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload } from "lucide-react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
 import Carousel from "./Carousel";
@@ -9,9 +9,10 @@ interface HotNTastyAdminDashboardProps {
   items: MenuItem[];
   onSave: (updatedItems: MenuItem[]) => void;
   onLogout: () => void;
+  onBannersChange?: (banners: string[]) => void;
 }
 
-export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
+export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout, onBannersChange }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
   const [bannerImages, setBannerImages] = useState([
     "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80", // Slide 1
@@ -20,6 +21,13 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
   ]);
   const [isUploading, setIsUploading] = useState<number | null>(null);
   const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY"; // Replace with your actual ImgBB API key
+
+  // Notify parent when banners change
+  useEffect(() => {
+    if (onBannersChange) {
+      onBannersChange(bannerImages);
+    }
+  }, [bannerImages, onBannersChange]);
 
   const [newItem, setNewItem] = useState({
     name: "",

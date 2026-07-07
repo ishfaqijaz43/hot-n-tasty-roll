@@ -1,4 +1,3 @@
-// New Carousel component for dynamic banners
 import React, { useState, useEffect, useRef } from "react";
 
 interface CarouselProps {
