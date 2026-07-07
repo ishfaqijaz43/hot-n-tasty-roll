@@ -177,6 +177,18 @@ const Index = () => {
     toast.info("Logged out of Admin Panel.");
   };
 
+  // Admin Dashboard Banner Handler - FIXED to prevent state overwrite
+  const handleAdminBannersChange = (newBanners: string[]) => {
+    // Prevent immediate re-fetch or revert by using functional update
+    setBannerImages((prev) => {
+      // Only update if the new banners are actually different
+      if (JSON.stringify(prev) !== JSON.stringify(newBanners)) {
+        return newBanners;
+      }
+      return prev;
+    });
+  };
+
   // If Admin Mode is active, render the Admin Dashboard instead of the customer view
   if (isAdminMode) {
     return (
@@ -184,6 +196,7 @@ const Index = () => {
         items={menuList}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
+        onBannersChange={handleAdminBannersChange}
       />
     );
   }
