@@ -1,9 +1,30 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Upload, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
-import Carousel from "./Carousel";
-import SliderControls from "./SliderControls";
+
+const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
+
+// Standalone helper: direct ImgBB upload with alert on error
+const directImgBBUpload = async (file: File): Promise<string> => {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success && data.data?.url) {
+      return data.data.url;
+    } else {
+      throw new Error(data.error?.message || "Failed to upload image to ImgBB");
+    }
+  } catch (error: any) {
+    alert("ImgBB Upload Error: " + (error?.message || error));
+    throw error;
+  }
+};
 
 interface HotNTastyAdminDashboardProps {
   items: MenuItem[];
@@ -12,14 +33,13 @@ interface HotNTastyAdminDashboardProps {
   onBannersChange?: (banners: string[]) => void;
 }
 
-export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout, onBannersChange }) => {
+export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
   const [bannerImages, setBannerImages] = useState([
     "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
   ]);
-  const [isUploading, setIsUploading] = useState<number | string | null>(null);
   const [newItem, setNewItem] = useState({
     name: "",
     category: "burgers",
@@ -27,61 +47,39 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     price: "",
     image: "",
   });
-  const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
 
-  // Banner upload handlers
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>, slideIndex: number) => {
+  // Direct item image upload via visible file input onChange
+  const handleItemImageUpload = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setIsUploading(slideIndex);
-    const toastId = toast.loading("Uploading banner image...");
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (data.success && data.data?.url) {
-        const newImages = [...bannerImages];
-        newImages[slideIndex] = data.data.url;
-        setBannerImages(newImages);
-        toast.success("Banner image uploaded successfully!", { id: toastId });
-      } else {
-        throw new Error(data.error?.message || "Failed to upload image");
-      }
-    } catch (error: any) {
-      console.error("Banner upload error:", error);
-      toast.error(error.message || "Failed to upload image.", { id: toastId });
-    } finally {
-      setIsUploading(null);
+      const url = await directImgBBUpload(file);
+      setLocalItems((prev) =>
+        prev.map((item) => (item.id === itemId ? { ...item, image: url } : item))
+      );
+      toast.success("Item image uploaded successfully!");
+    } catch (error) {
+      // alert already shown in helper
     }
+    e.target.value = "";
   };
 
-  // Item image upload handlers
-  const handleItemImageUpload = async (itemId: string) => {
-    const file = (document.querySelector(`input[type="file"][data-item-id="${itemId}"]`) as HTMLInputElement).files?.[0];
+  // Direct banner image upload via visible file input onChange
+  const handleBannerUpload = async (slideIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-    const toastId = toast.loading("Uploading item image...");
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: formData,
+      const url = await directImgBBUpload(file);
+      setBannerImages((prev) => {
+        const newImages = [...prev];
+        newImages[slideIndex] = url;
+        return newImages;
       });
-      const data = await response.json();
-      if (data.success && data.data?.url) {
-        setLocalItems((prev) => prev.map((item) => item.id === itemId ? { ...item, image: data.data.url } : item));
-        toast.success("Item image uploaded successfully!", { id: toastId });
-      } else {
-        throw new Error(data.error?.message || "Failed to upload image");
-      }
-    } catch (error: any) {
-      console.error("Item image upload error:", error);
-      toast.error(error.message || "Failed to upload image.", { id: toastId });
+      toast.success(`Slide ${slideIndex + 1} banner uploaded successfully!`);
+    } catch (error) {
+      // alert already shown in helper
     }
+    e.target.value = "";
   };
 
   // Add new item handler
@@ -91,7 +89,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       toast.error("Please fill in at least the Name and Price fields.");
       return;
     }
-
     const createdItem: MenuItem = {
       id: `custom-${Date.now()}`,
       name: newItem.name,
@@ -100,39 +97,24 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       price: parseFloat(newItem.price) || 0,
       image: newItem.image || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
     };
-
     setLocalItems((prev) => [createdItem, ...prev]);
-    setNewItem({
-      name: "",
-      category: "burgers",
-      description: "",
-      price: "",
-      image: "",
-    });
+    setNewItem({ name: "", category: "burgers", description: "", price: "", image: "" });
     toast.success(`Added "${createdItem.name}" to the list! Click 'Save Changes' to persist.`);
   };
 
-  // Price change handler for existing items
   const handlePriceChange = (id: string, value: string) => {
     const numericValue = parseFloat(value) || 0;
-    setLocalItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, price: numericValue } : item))
-    );
+    setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, price: numericValue } : item)));
   };
 
-  // Image URL change handler for existing items
   const handleImageChange = (id: string, value: string) => {
-    setLocalItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, image: value } : item))
-    );
+    setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, image: value } : item)));
   };
 
-  // Delete item handler
   const handleDeleteItem = (id: string) => {
     setLocalItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // Save changes handler
   const handleSaveChanges = () => {
     onSave(localItems);
   };
@@ -157,6 +139,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
             </button>
           </div>
         </div>
+
         {/* Add New Item Form */}
         <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-2">
@@ -168,54 +151,47 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
           <form onSubmit={handleAddNewItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Tag className="w-3 h-3" />
-                Item Name *
+                <Tag className="w-3 h-3" /> Item Name *
               </label>
               <input type="text" placeholder="e.g., Special Garlic Mayo Roll" value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" required />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Tag className="w-3 h-3" />
-                Category
+                <Tag className="w-3 h-3" /> Category
               </label>
               <select value={newItem.category} onChange={(e) => setNewItem({ ...newItem, category: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm">
                 {HOT_N_TASTY_CATEGORIES.filter((c) => c.id !== "all").map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name.replace(/[^a-zA-Z ]/g, "").trim()}
-                  </option>
+                  <option key={cat.id} value={cat.id}>{cat.name.replace(/[^a-zA-Z ]/g, "").trim()}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <DollarSign className="w-3 h-3" />
-                Price (Rs) *
+                <DollarSign className="w-3 h-3" /> Price (Rs) *
               </label>
               <input type="number" placeholder="e.g., 350" value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" required />
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <FileText className="w-3 h-3" />
-                Description
+                <FileText className="w-3 h-3" /> Description
               </label>
-              <input type="text" placeholder="Brief description of ingredients or taste..." value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" />
+              <input type="text" placeholder="Brief description..." value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                <Image className="w-3 h-3" />
-                Image URL
+                <Image className="w-3 h-3" /> Image URL
               </label>
-              <input type="url" placeholder="https://images.unsplash.com/..." value={newItem.image} onChange={(e) => setNewItem({ ...newItem, image: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" />
+              <input type="url" placeholder="https://..." value={newItem.image} onChange={(e) => setNewItem({ ...newItem, image: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" />
             </div>
             <div className="md:col-span-2 lg:col-span-3 pt-2">
               <button type="submit" className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
-                <Plus className="w-4 h-4" />
-                Add Item to List
+                <Plus className="w-4 h-4" /> Add Item to List
               </button>
             </div>
           </form>
         </div>
-        {/* Banner Management Section */}
+
+        {/* Banner Management Section - Raw visible file inputs */}
         <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-red-600/10 rounded-lg text-red-600">
@@ -224,24 +200,21 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
             <h2 className="text-xl font-bold text-white">Manage Homepage Banners</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {["Slide 1", "Slide 2", "Slide 3"].map((slide, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <label className="text-sm font-bold text-zinc-500">{slide}</label>
-                <div className="flex-1">
-                  <input type="file" accept="image/*" onChange={(e) => handleBannerUpload(e, index)} className="hidden" disabled={isUploading === index} />
-                  <label className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-white text-sm font-bold cursor-pointer flex items-center gap-1.5 transition-colors shrink-0">
-                    Upload Image
-                    {isUploading === index ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4" />
-                    )}
-                  </label>
-                </div>
-              </div>
-            ))}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-zinc-300">Upload Slide 1</label>
+              <input type="file" accept="image/*" onChange={(e) => handleBannerUpload(0, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-xl p-2" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-zinc-300">Upload Slide 2</label>
+              <input type="file" accept="image/*" onChange={(e) => handleBannerUpload(1, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-xl p-2" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-zinc-300">Upload Slide 3</label>
+              <input type="file" accept="image/*" onChange={(e) => handleBannerUpload(2, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-xl p-2" />
+            </div>
           </div>
         </div>
+
         {/* Menu Items List */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -260,7 +233,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                     <p className="text-xs text-zinc-400 line-clamp-1 mt-1">{item.description}</p>
                   </div>
                 </div>
-                {/* Middle: Inputs */}
+                {/* Middle: Inputs + Visible Upload */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-1/2">
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Price (Rs)</span>
@@ -269,6 +242,11 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL</span>
                     <input type="text" value={item.image} onChange={(e) => handleImageChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
+                  </div>
+                  {/* VISIBLE FILE INPUT FOR ITEM IMAGE */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Upload New Image</span>
+                    <input type="file" accept="image/*" onChange={(e) => handleItemImageUpload(item.id, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-lg p-2" />
                   </div>
                 </div>
                 {/* Right: Actions */}
@@ -281,12 +259,12 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
             ))}
           </div>
         </div>
+
         {/* Bottom Save Bar */}
         <div className="sticky bottom-6 bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-4 rounded-2xl flex items-center justify-between shadow-2xl">
           <span className="text-sm text-zinc-400">You have unsaved changes in your local list.</span>
           <button onClick={handleSaveChanges} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20">
-            <Save className="w-4 h-4" />
-            Save Changes
+            <Save className="w-4 h-4" /> Save Changes
           </button>
         </div>
       </div>
