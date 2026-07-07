@@ -216,12 +216,12 @@ const Index = () => {
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
             <div className="hidden sm:block">
-              <span className="text-xl font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                Hot N Tasty Roll BBQ Gulistan-e-johar
-              </span>
-              <span className="block text-[10px] text-gray-500 tracking-widest uppercase font-bold">
-                Gulistan-e-Johar, Karachi
-              </span>
+              {/* Replace text with logo image */}
+              <img 
+                src="/logo.jpg" 
+                alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
+                className="h-10 w-auto object-contain" 
+              />
             </div>
           </div>
 
@@ -370,58 +370,15 @@ const Index = () => {
 
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-900 leading-tight">
-            Hot N Tasty Roll BBQ Gulistan-e-johar <br />
-            <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
-              "Bringing Out The Best !!!"
-            </span>
-          </h1>
-
-          <p className="text-zinc-600 text-base sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
-            Experience the ultimate taste of Gulistan-e-Johar. Sizzling hot paratha rolls, crispy zingers, juicy burgers, and premium BBQ plates crafted to perfection.
-          </p>
-
-          {/* Category Navigation */}
-          <div className="pt-8 max-w-5xl mx-auto">
-            <div className="text-center mb-4">
-              <span className="text-xs font-black text-red-600 uppercase tracking-widest">Select a Category to Browse</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-              {HOT_N_TASTY_CATEGORIES.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    scrollToSection("menu");
-                  }}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
-                    selectedCategory === category.id
-                      ? "bg-gradient-to-r from-red-600 to-red-500 text-white border-red-600 scale-105"
-                      : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button
-              onClick={() => scrollToSection("menu")}
-              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
-            >
-              <Utensils className="w-5 h-5" />
-              Order Now
-            </button>
-            <button
-              onClick={() => scrollToSection("location")}
-              className="w-full sm:w-auto px-8 py-3.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <MapPin className="w-5 h-5 text-red-600" />
-              Find Us in Johar
-            </button>
-          </div>
+          {/* Replace text with logo image */}
+          <img 
+            src="/logo.jpg" 
+            alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
+            className="h-16 w-auto object-contain mb-4" 
+          />
+          <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
+            "Bringing Out The Best !!!"
+          </span>
         </div>
       </section>
 
@@ -787,9 +744,12 @@ const Index = () => {
             <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              Hot N Tasty Roll BBQ Gulistan-e-johar
-            </span>
+            {/* Replace text with logo image */}
+            <img 
+              src="/logo.jpg" 
+              alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
+              className="h-8 w-auto object-contain" 
+            />
           </div>
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
             Gulistan-e-Johar's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
