@@ -65,24 +65,39 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     e.target.value = "";
   };
 
-  // Direct banner image upload - FIXED with proper state update and parent notification
+  // Direct banner image upload - bulletproof version matching item upload exactly
   const handleBannerUpload = async (slideIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await directImgBBUpload(file);
+      // EXACT SAME LOGIC as handleItemImageUpload
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!data.success || !data.data?.url) {
+        throw new Error(data.error?.message || "ImgBB returned no URL");
+      }
+      const uploadedUrl = data.data.url;
+      // Visual success alert
+      alert("ImgBB Upload Success! URL is: " + uploadedUrl);
+      // Update banner state directly
       setBannerImages((prev) => {
         const newImages = [...prev];
-        newImages[slideIndex] = url;
+        newImages[slideIndex] = uploadedUrl;
         return newImages;
       });
-      // Notify parent component of banner changes
+      // Notify parent component
       if (onBannersChange) {
-        onBannersChange([...bannerImages.slice(0, slideIndex), url, ...bannerImages.slice(slideIndex + 1)]);
+        onBannersChange([...bannerImages.slice(0, slideIndex), uploadedUrl, ...bannerImages.slice(slideIndex + 1)]);
       }
       toast.success(`Slide ${slideIndex + 1} banner uploaded successfully!`);
     } catch (error: any) {
-      alert("Banner Upload Failed: " + (error?.message || error));
+      // Detailed failure alert
+      alert("Banner Upload Failed at step [ImgBB fetch/upload]. Error: " + (error?.message || error));
     }
     e.target.value = "";
   };
