@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText } from "lucide-react";
+import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Check, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
 
@@ -33,7 +33,7 @@ interface HotNTastyAdminDashboardProps {
   onBannersChange?: (banners: string[]) => void;
 }
 
-export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout }) => {
+export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ items, onSave, onLogout, onBannersChange }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>([...items]);
   const [bannerImages, setBannerImages] = useState([
     "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
@@ -47,6 +47,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     price: "",
     image: "",
   });
+  const [newItemImageUploaded, setNewItemImageUploaded] = useState(false);
 
   // Direct item image upload - working logic
   const handleItemImageUpload = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +65,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     e.target.value = "";
   };
 
-  // Direct banner image upload - FIXED to mirror working item upload logic
+  // Direct banner image upload - FIXED with proper state update and parent notification
   const handleBannerUpload = async (slideIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -75,10 +76,28 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
         newImages[slideIndex] = url;
         return newImages;
       });
+      // Notify parent component of banner changes
+      if (onBannersChange) {
+        onBannersChange([...bannerImages.slice(0, slideIndex), url, ...bannerImages.slice(slideIndex + 1)]);
+      }
       toast.success(`Slide ${slideIndex + 1} banner uploaded successfully!`);
     } catch (error: any) {
-      // Add visual error tracking for banner uploads
-      alert("Banner Upload Error: " + (error?.message || error));
+      alert("Banner Upload Failed: " + (error?.message || error));
+    }
+    e.target.value = "";
+  };
+
+  // Handle new item image upload from the add new product form
+  const handleNewItemImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await directImgBBUpload(file);
+      setNewItem({ ...newItem, image: url });
+      setNewItemImageUploaded(true);
+      toast.success("New item image uploaded successfully!");
+    } catch (error: any) {
+      alert("New Item Image Upload Failed: " + (error?.message || error));
     }
     e.target.value = "";
   };
@@ -100,6 +119,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     };
     setLocalItems((prev) => [createdItem, ...prev]);
     setNewItem({ name: "", category: "burgers", description: "", price: "", image: "" });
+    setNewItemImageUploaded(false);
     toast.success(`Added "${createdItem.name}" to the list! Click 'Save Changes' to persist.`);
   };
 
@@ -141,7 +161,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
           </div>
         </div>
 
-        {/* Add New Item Form */}
+        {/* Add New Item Form with Image Upload */}
         <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-red-600/10 rounded-lg text-red-600">
@@ -183,6 +203,19 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                 <Image className="w-3 h-3" /> Image URL
               </label>
               <input type="url" placeholder="https://..." value={newItem.image} onChange={(e) => setNewItem({ ...newItem, image: e.target.value })} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white focus:outline-none focus:border-red-600 text-sm" />
+            </div>
+            {/* NEW: Image Upload Field for Add New Product Form */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
+                <Upload className="w-3 h-3" /> Upload Image
+              </label>
+              <input type="file" accept="image/*" onChange={handleNewItemImageUpload} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-xl p-2" />
+              {newItemImageUploaded && newItem.image && (
+                <div className="flex items-center gap-2 mt-1 text-emerald-500 text-xs">
+                  <Check className="w-3 h-3" />
+                  <span>Image Uploaded Successfully</span>
+                </div>
+              )}
             </div>
             <div className="md:col-span-2 lg:col-span-3 pt-2">
               <button type="submit" className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
