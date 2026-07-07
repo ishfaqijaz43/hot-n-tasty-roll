@@ -217,7 +217,7 @@ const Index = () => {
             </div>
             <div className="hidden sm:block">
               <span className="text-xl font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                Hot N Tasty Roll BBQ
+                Hot N Tasty Roll BBQ Gulistan-e-johar
               </span>
               <span className="block text-[10px] text-gray-500 tracking-widest uppercase font-bold">
                 Gulistan-e-Johar, Karachi
@@ -327,30 +327,6 @@ const Index = () => {
             </button>
           </div>
         </div>
-
-        {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
-            <button
-              onClick={() => scrollToSection("menu")}
-              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
-            >
-              Our Menu
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
-            >
-              About Us
-            </button>
-            <button
-              onClick={() => scrollToSection("location")}
-              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
-            >
-              Location & Timings
-            </button>
-          </div>
-        )}
       </header>
 
       {/* Hero Section with Carousel */}
@@ -371,7 +347,7 @@ const Index = () => {
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-900 leading-tight">
-            Hot N Tasty Roll BBQ <br />
+            Hot N Tasty Roll BBQ Gulistan-e-johar <br />
             <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
               "Bringing Out The Best !!!"
             </span>
@@ -504,7 +480,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              }))
             </div>
           )}
         </div>
@@ -788,7 +764,7 @@ const Index = () => {
               <Flame className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-black tracking-wider bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-              Hot N Tasty Roll BBQ
+              Hot N Tasty Roll BBQ Gulistan-e-johar
             </span>
           </div>
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
@@ -807,7 +783,7 @@ const Index = () => {
           </div>
 
           <div className="border-t border-zinc-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500 text-xs">
-            <p>© 2026 Hot N Tasty Roll BBQ. All Rights Reserved. | Developed by ByteCraft Solutions</p>
+            <p>© 2026 Hot N Tasty Roll BBQ Gulistan-e-johar. All Rights Reserved. | Developed by ByteCraft Solutions</p>
             <p>Designed for Karachi's ultimate food lovers.</p>
           </div>
           <MadeWithDyad />
