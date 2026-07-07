@@ -19,8 +19,8 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80", // Slide 2
     "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"  // Slide 3
   ]);
-  const [isUploading, setIsUploading] = useState<number | null>(null);
-  const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY"; // Replace with your actual ImgBB API key
+  const [isUploading, setIsUploading] = useState<number | string | null>(null);
+  const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08"; // Fixed API key
 
   // Notify parent when banners change
   useEffect(() => {
@@ -116,6 +116,42 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       }
     } catch (error: any) {
       console.error("Banner upload error:", error);
+      toast.error(error.message || "Failed to upload image.", { id: toastId });
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
+  const handleItemImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, itemId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(itemId);
+    const toastId = toast.loading("Uploading item image...");
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data?.url) {
+        setLocalItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId ? { ...item, image: data.data.url } : item
+          )
+        );
+        toast.success("Item image uploaded successfully!", { id: toastId });
+      } else {
+        throw new Error(data.error?.message || "Failed to upload image");
+      }
+    } catch (error: any) {
+      console.error("Item image upload error:", error);
       toast.error(error.message || "Failed to upload image.", { id: toastId });
     } finally {
       setIsUploading(null);
