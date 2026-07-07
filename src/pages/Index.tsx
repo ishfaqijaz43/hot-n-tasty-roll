@@ -56,7 +56,6 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
-  const [lastAddedPrice, setLastAddedPrice] = useState<number | null>(null);
 
   // Search Autocomplete States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -65,6 +64,11 @@ const Index = () => {
   // Admin Panel States
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Calculate total cart value
+  const cartTotal = useMemo(() => {
+    return cartItems.reduce((sum, cartItem) => sum + cartItem.item.price * cartItem.quantity, 0);
+  }, [cartItems]);
 
   // Filter menu items based on category and search query
   const filteredItems = useMemo(() => {
@@ -113,7 +117,6 @@ const Index = () => {
       }
       return [...prev, { item, quantity: 1 }];
     });
-    setLastAddedPrice(item.price);
     setShowCartNotification(true);
   };
 
@@ -181,7 +184,6 @@ const Index = () => {
         items={menuList}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
-        onBannersChange={setBannerImages}
       />
     );
   }
@@ -357,7 +359,7 @@ const Index = () => {
             Experience the ultimate taste of Gulistan-e-Johar. Sizzling hot paratha rolls, crispy zingers, juicy burgers, and premium BBQ plates crafted to perfection.
           </p>
 
-          {/* Restructured Category Navigation (Grid/Flex Wrap, No Horizontal Scroll) */}
+          {/* Category Navigation */}
           <div className="pt-8 max-w-5xl mx-auto">
             <div className="text-center mb-4">
               <span className="text-xs font-black text-red-600 uppercase tracking-widest">Select a Category to Browse</span>
@@ -385,14 +387,14 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <button
               onClick={() => scrollToSection("menu")}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold rounded-xl shadow-lg shadow-red-600/20 transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2"
             >
               <Utensils className="w-5 h-5" />
               Order Now
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="w-full sm:w-auto px-8 py-4 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
               <MapPin className="w-5 h-5 text-red-600" />
               Find Us in Johar
@@ -458,7 +460,7 @@ const Index = () => {
                       <h3 className="font-bold text-lg text-zinc-900 group-hover:text-red-600 transition-colors line-clamp-1">
                         {item.name}
                       </h3>
-                      <p className="text-zinc-600 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                      <p className="text-zinc-600 text-sm line-clamp-2 leading-relaxed">
                         {item.description}
                       </p>
                     </div>
@@ -472,7 +474,7 @@ const Index = () => {
                       </div>
                       <button
                         onClick={() => handleAddToCart(item)}
-                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs transition-all duration-200 flex items-center gap-1.5 active:scale-95 shadow-sm"
+                        className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
                       >
                         <Plus className="w-4 h-4" />
                         Add to Cart
@@ -746,7 +748,7 @@ const Index = () => {
                 href="https://maps.google.com/?q=Noman+Grand+City,+Block+17,+Gulistan-e-Johar,+Karachi"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative z-10 px-6 py-2.5 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold rounded-xl text-sm transition-colors border border-zinc-200 flex items-center gap-2 shadow-sm"
+                className="relative z-10 px-6 py-2.5 bg-white hover:bg-zinc-100 text-zinc-800 font-semibold rounded-xl text-sm transition-colors flex items-center gap-2 shadow-sm"
               >
                 Open in Google Maps
                 <ChevronRight className="w-4 h-4" />
@@ -807,7 +809,7 @@ const Index = () => {
         onSuccess={() => setIsAdminMode(true)}
       />
 
-      {/* Smooth Animated Slide-up Cart Notification Bar */}
+      {/* Smooth Animated Slide-up Cart Notification Bar - Shows Cumulative Total */}
       {showCartNotification && cartItems.length > 0 && !isCartOpen && (
         <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[320px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -816,23 +818,17 @@ const Index = () => {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black text-white">
-                Item added - Rs. {lastAddedPrice}
+                Cart Total Updated - Rs. {cartTotal}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center justify-end w-auto shrink-0">
             <button
               onClick={() => setIsCartOpen(true)}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1 shadow-lg shadow-red-600/20"
+              className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1.5 shadow-lg shadow-red-600/20"
             >
               Checkout
               <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setShowCartNotification(false)}
-              className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
