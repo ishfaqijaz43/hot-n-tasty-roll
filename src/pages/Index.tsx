@@ -327,6 +327,30 @@ const Index = () => {
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
+            <button
+              onClick={() => scrollToSection("menu")}
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
+            >
+              Our Menu
+            </button>
+            <button
+              onClick={() => scrollToSection("about")}
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
+            >
+              About Us
+            </button>
+            <button
+              onClick={() => scrollToSection("location")}
+              className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
+            >
+              Location & Timings
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Hero Section with Carousel */}
@@ -480,7 +504,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              }))
+              ))}
             </div>
           )}
         </div>
