@@ -156,7 +156,7 @@ const Index = () => {
         .map((i) => {
           if (i.item.id === itemId) {
             const newQty = i.quantity + delta;
-            return { ...i, quantity: newQty };
+            return { ...i, quantity: i.quantity + 1 };
           }
           return i;
         })
@@ -391,7 +391,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section with Responsive Carousel Heights & Perfect Image Filling */}
-      <section id="hero" className="relative w-full h-[400px] sm:h-[550px] lg:h-[650px] flex items-center justify-center overflow-hidden bg-zinc-950">
+      <section id="hero" className="relative w-full aspect-video sm:aspect-none h-auto sm:h-[550px] lg:h-[650px] flex items-center justify-center overflow-hidden bg-zinc-950">
         {/* Carousel */}
         <Carousel
           images={bannerImages}
