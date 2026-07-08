@@ -24,8 +24,6 @@ const Carousel: React.FC<CarouselProps> = ({ images, currentSlide, className = "
               e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
             }}
           />
-          {/* Black gradient overlay for premium text contrast */}
-          <div className="absolute inset-0 bg-black/45" />
         </div>
       ))}
     </div>

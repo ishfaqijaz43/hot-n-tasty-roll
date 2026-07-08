@@ -403,35 +403,6 @@ const Index = () => {
           totalSlides={bannerImages.length}
           onChange={setCurrentSlide}
         />
-
-        {/* Content Overlay - Perfectly centered vertically & horizontally */}
-        <div className="relative z-10 max-w-4xl mx-4 sm:mx-auto text-center space-y-4 sm:space-y-6 bg-black/50 backdrop-blur-[2px] p-6 sm:p-12 rounded-3xl border border-white/10 shadow-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs font-black uppercase tracking-wider">
-            <Flame className="w-4 h-4 animate-bounce" />
-            Johar's No. 1 Roll & BBQ Point
-          </div>
-          <h1 className="text-3xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow">
-            WELCOME TO <span className="text-red-500">HOT N TASTY ROLL</span>
-          </h1>
-          <p className="text-zinc-200 text-xs sm:text-lg max-w-2xl mx-auto drop-shadow-sm font-semibold leading-relaxed">
-            BEST BBQ & ROLLS IN KARACHI!
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <button
-              onClick={() => scrollToSection("menu")}
-              className="px-5 py-2.5 sm:px-6 sm:py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-red-600/30 flex items-center gap-2 hover:scale-[1.02]"
-            >
-              Order Online Now
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => scrollToSection("location")}
-              className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-xs sm:text-sm transition-all border border-white/20 backdrop-blur-sm"
-            >
-              Location & Timings
-            </button>
-          </div>
-        </div>
       </section>
 
       {/* Interactive Menu Section */}
