@@ -27,6 +27,13 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner";
 import Carousel from "@/components/Carousel";
 import SliderControls from "@/components/SliderControls";
+import { 
+  getSupabaseMenu, 
+  saveSupabaseMenu, 
+  getSupabaseBanners, 
+  saveSupabaseBanners,
+  isSupabaseConfigured 
+} from "@/lib/supabase";
 
 interface CartItem {
   item: MenuItem;
@@ -34,13 +41,13 @@ interface CartItem {
 }
 
 const Index = () => {
-  // Dynamic Menu List State with LocalStorage persistence
+  // Dynamic Menu List State with LocalStorage persistence as fallback
   const [menuList, setMenuList] = useState<MenuItem[]>(() => {
     const saved = localStorage.getItem("hot_n_tasty_menu");
     return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
   });
 
-  // Banner images state - updated by admin dashboard and persisted correctly
+  // Banner images state with LocalStorage persistence as fallback
   const [bannerImages, setBannerImages] = useState<string[]>(() => {
     const saved = localStorage.getItem("hot_n_tasty_banners");
     return saved ? JSON.parse(saved) : [
@@ -89,6 +96,30 @@ const Index = () => {
       }
       return prev;
     });
+  }, []);
+
+  // Fetch central database state from Supabase on component mounting
+  useEffect(() => {
+    const loadCloudData = async () => {
+      if (!isSupabaseConfigured) {
+        console.log("Supabase parameters are not configured yet. Running in offline/localStorage mode.");
+        return;
+      }
+      
+      const menuCloud = await getSupabaseMenu();
+      if (menuCloud && menuCloud.length > 0) {
+        setMenuList(menuCloud);
+        localStorage.setItem("hot_n_tasty_menu", JSON.stringify(menuCloud));
+      }
+
+      const bannersCloud = await getSupabaseBanners();
+      if (bannersCloud && bannersCloud.length > 0) {
+        setBannerImages(bannersCloud);
+        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(bannersCloud));
+      }
+    };
+
+    loadCloudData();
   }, []);
 
   // Calculate total cart value
@@ -194,11 +225,24 @@ const Index = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Admin Handlers
-  const handleSaveMenu = (updatedItems: MenuItem[]) => {
+  // Admin Handlers - Live cloud push with standard fallback
+  const handleSaveMenu = async (updatedItems: MenuItem[]) => {
     setMenuList(updatedItems);
     localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
-    toast.success("Menu changes saved successfully!");
+    
+    if (isSupabaseConfigured) {
+      const syncLoader = toast.loading("Saving changes to live cloud database...");
+      const success = await saveSupabaseMenu(updatedItems);
+      toast.dismiss(syncLoader);
+      
+      if (success) {
+        toast.success("Menu synchronized globally to all customers!");
+      } else {
+        toast.error("Failed to connect to Supabase. Saved to browser locally.");
+      }
+    } else {
+      toast.success("Menu changes saved locally! (Configure Supabase keys for global real-time synchronization)");
+    }
   };
 
   const handleLogout = () => {
@@ -206,9 +250,21 @@ const Index = () => {
     toast.info("Logged out of Admin Panel.");
   };
 
-  const handleAdminBannersChange = (newBanners: string[]) => {
+  const handleAdminBannersChange = async (newBanners: string[]) => {
     setBannerImages(newBanners);
     localStorage.setItem("hot_n_tasty_banners", JSON.stringify(newBanners));
+
+    if (isSupabaseConfigured) {
+      const syncLoader = toast.loading("Updating live cloud banners...");
+      const success = await saveSupabaseBanners(newBanners);
+      toast.dismiss(syncLoader);
+
+      if (success) {
+        toast.success("New slide banners are now live globally!");
+      } else {
+        toast.error("Banner upload sync error.");
+      }
+    }
   };
 
   const getItemQuantityInCart = (itemId: string) => {
