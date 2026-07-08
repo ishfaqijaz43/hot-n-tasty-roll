@@ -348,7 +348,7 @@ const Index = () => {
             >
               <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[9px] sm:text-[10px] font-bold w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-white animate-bounce shadow-md">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border border-white animate-bounce shadow-md">
                   {totalCartCount}
                 </span>
               )}
