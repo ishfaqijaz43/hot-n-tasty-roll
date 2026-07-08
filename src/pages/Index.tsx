@@ -220,13 +220,13 @@ const Index = () => {
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-          {/* Logo Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex flex-row justify-between items-center flex-nowrap gap-4">
+          {/* Logo Container - Proportionally Scaled on Mobile */}
           <div
             onClick={() => scrollToSection("hero")}
-            className="flex items-center gap-3 cursor-pointer group shrink-0"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
           >
-            <div className="relative w-14 h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
+            <div className="relative w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center overflow-hidden shadow-md sm:shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               {!logoHasError ? (
                 <img 
                   src="/logo.jpg" 
@@ -235,15 +235,15 @@ const Index = () => {
                   onError={() => setLogoHasError(true)}
                 />
               ) : (
-                <Flame className="w-7 h-7 text-white animate-pulse" />
+                <Flame className="w-5 h-5 sm:w-7 sm:h-7 text-white animate-pulse" />
               )}
             </div>
             
             <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors leading-none">
+              <span className="text-sm sm:text-lg font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors leading-none">
                 HOT N <span className="text-red-600">TASTY</span>
               </span>
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
+              <span className="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5 sm:mt-1">
                 Roll BBQ Johar
               </span>
             </div>
@@ -271,36 +271,36 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Utility Icon Controls: Symmetrical design exactly aligned horizontally & vertically on desktop and mobile */}
-          <div className="flex items-center gap-3 justify-end flex-1 max-w-md h-full">
+          {/* Symmetrical Utility Icon Controls: Clean, matching, horizontal row with gap */}
+          <div className="flex items-center gap-2 sm:gap-3 justify-end shrink-0">
             {/* Search Trigger Button & sliding overlay */}
-            <div ref={searchContainerRef} className="relative flex items-center h-full">
+            <div ref={searchContainerRef} className="relative flex items-center">
               <button
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 flex items-center justify-center shrink-0 w-11 h-11"
+                className="w-10 h-10 sm:w-11 sm:h-11 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 flex items-center justify-center shrink-0"
               >
-                <Search className="w-5 h-5 text-zinc-700 hover:text-red-600 transition-colors" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-700 hover:text-red-600 transition-colors" />
               </button>
               
-              {/* Sliding Input Box */}
+              {/* Sliding Input Box - Width restricted cleanly on tiny displays */}
               <div className={`absolute right-full mr-2 transition-all duration-300 transform origin-right ${
-                isSearchExpanded ? "w-40 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
+                isSearchExpanded ? "w-28 xs:w-36 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
               }`}>
                 <input
                   type="text"
-                  placeholder="Search menu..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
                     setIsSearchFocused(true);
                   }}
                   onFocus={() => setIsSearchFocused(true)}
-                  className="w-full pl-4 pr-10 py-2.5 bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm shadow-xl"
+                  className="w-full pl-3 pr-8 py-2 bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-xs sm:text-sm shadow-xl"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
                   >
                     ✕
                   </button>
@@ -309,7 +309,7 @@ const Index = () => {
 
               {/* Autocomplete Suggestions Dropdown */}
               {isSearchFocused && searchSuggestions.length > 0 && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 w-64 max-h-64 overflow-y-auto">
+                <div className="absolute top-full right-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 w-60 sm:w-64 max-h-64 overflow-y-auto">
                   {searchSuggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
@@ -329,25 +329,25 @@ const Index = () => {
               )}
             </div>
 
-            {/* Cart Button */}
+            {/* Cart Button - Perfectly styled matching Search */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center w-11 h-11"
+              className="relative w-10 h-10 sm:w-11 sm:h-11 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center"
             >
-              <ShoppingBag className="w-5 h-5 group-hover:text-red-600 transition-colors" />
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-md">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-[9px] sm:text-[10px] font-black w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-white animate-bounce shadow-md">
                   {totalCartCount}
                 </span>
               )}
             </button>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - Perfectly styled matching Search & Cart */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center w-11 h-11"
+              className="lg:hidden w-10 h-10 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -559,7 +559,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Us Section - Redesigned to be clean single column layout without paratha roll visual collage */}
+      {/* About Us Section */}
       <section id="about" className="py-24 bg-white relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-50 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
