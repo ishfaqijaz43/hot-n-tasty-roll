@@ -17,11 +17,7 @@ import {
   ThumbsUp,
   ShieldCheck,
   Lock,
-  Wifi,
-  Smile,
-  Coffee,
-  ArrowRight,
-  Heart
+  ArrowRight
 } from "lucide-react";
 import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/data/hotNTastyMenu";
 import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
@@ -79,7 +75,6 @@ const Index = () => {
   // Filter menu items based on category and search query
   const filteredItems = useMemo(() => {
     return menuList.filter((item) => {
-      // Direct comparison with case insensitivity or "all" default
       const matchesCategory =
         selectedCategory.toLowerCase() === "all" || 
         item.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -197,7 +192,6 @@ const Index = () => {
     });
   };
 
-  // Check if item is already in cart to display custom quantity widget on menu card
   const getItemQuantityInCart = (itemId: string) => {
     const found = cartItems.find((i) => i.item.id === itemId);
     return found ? found.quantity : 0;
@@ -217,40 +211,38 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Logo with Fallback */}
           <div
             onClick={() => scrollToSection("hero")}
-            className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+            className="flex items-center gap-3 cursor-pointer group shrink-0"
           >
-            <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
-              <Flame className="w-6 h-6 text-white animate-pulse" />
-            </div>
-            
-            <div className="flex flex-col">
+            <div className="relative w-14 h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               {!logoHasError ? (
                 <img 
                   src="/logo.jpg" 
                   alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
-                  className="h-10 w-auto object-contain"
+                  className="w-full h-full object-cover"
                   onError={() => setLogoHasError(true)}
                 />
               ) : (
-                <div className="flex flex-col">
-                  <span className="text-xl font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors">
-                    HOT N <span className="text-red-600">TASTY</span>
-                  </span>
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
-                    Roll BBQ Johar
-                  </span>
-                </div>
+                <Flame className="w-7 h-7 text-white animate-pulse" />
               )}
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-lg font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors leading-none">
+                HOT N <span className="text-red-600">TASTY</span>
+              </span>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
+                Roll BBQ Johar
+              </span>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 shrink-0">
+          <nav className="hidden lg:flex items-center gap-8 shrink-0">
             <button
               onClick={() => scrollToSection("menu")}
               className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
@@ -271,8 +263,8 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Search Bar & Actions */}
-          <div className="flex items-center gap-3 flex-1 justify-end">
+          {/* Search Bar & Actions - Perfectly aligned and centered */}
+          <div className="flex items-center gap-3 justify-end flex-1 max-w-md">
             {/* Expanding Search Bar */}
             <div ref={searchContainerRef} className="relative flex items-center">
               <Search className="absolute left-3 text-zinc-400 w-4 h-4 cursor-pointer z-10" 
@@ -292,7 +284,7 @@ const Index = () => {
                   setIsSearchFocused(true);
                 }}
                 className={`pl-10 pr-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-250 ${
-                  isSearchExpanded ? "w-56 sm:w-64 opacity-100" : "w-10 opacity-0 pointer-events-none"
+                  isSearchExpanded ? "w-44 sm:w-60 opacity-100" : "w-10 opacity-0 pointer-events-none"
                 }`}
               />
               {searchQuery && (
@@ -331,11 +323,11 @@ const Index = () => {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0"
+              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center"
             >
               <ShoppingBag className="w-5 h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-md">
+                <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-md">
                   {totalCartCount}
                 </span>
               )}
@@ -344,7 +336,7 @@ const Index = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0"
+              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -492,7 +484,6 @@ const Index = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                         onError={(e) => {
-                          // Clean fallback image if direct link is broken
                           e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
                         }}
                       />
@@ -601,7 +592,7 @@ const Index = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-zinc-900 text-sm">Late Night</h4>
-                    <p className="text-xs text-zinc-500 mt-0.5">Open till 3:30 AM</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">Open till 5:00 AM</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -765,8 +756,12 @@ const Index = () => {
                     <h4 className="font-bold text-zinc-900 text-sm">Operational Hours</h4>
                     <div className="text-zinc-700 text-sm mt-1 space-y-1">
                       <p className="flex justify-between gap-4">
-                        <span>Open Daily:</span>
-                        <span className="font-semibold text-zinc-900">4:00 PM – 3:30 AM</span>
+                        <span>Opening:</span>
+                        <span className="font-semibold text-zinc-900">4:00 PM</span>
+                      </p>
+                      <p className="flex justify-between gap-4">
+                        <span>Closing:</span>
+                        <span className="font-semibold text-zinc-900">5:00 AM (Daily, PKT)</span>
                       </p>
                     </div>
                   </div>
@@ -804,7 +799,6 @@ const Index = () => {
 
             {/* Right: Map Placeholder */}
             <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex flex-col items-center justify-center text-center p-8 space-y-4 shadow-sm">
-              {/* Decorative Map Background Pattern */}
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]" />
               
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-600 relative z-10 border border-red-100">

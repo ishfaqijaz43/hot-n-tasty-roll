@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, Plus, Minus, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle, PackageCheck } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Plus, Minus, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle, PackageCheck, Clock } from "lucide-react";
 import { MenuItem } from "@/data/hotNTastyMenu";
 
 interface CartItem {
@@ -44,6 +44,13 @@ const DELIVERY_AREAS = [
   { name: "Other", fee: 0 }
 ];
 
+// Helper to get current PKT (Pakistan Standard Time, UTC+5)
+const getPKTTime = (): Date => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 3600000 * 5);
+};
+
 export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
   isOpen,
   onClose,
@@ -53,10 +60,73 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
   onClearCart,
 }) => {
   const [customerName, setCustomerName] = useState("");
-  const [orderType, setOrderType] = useState<"delivery" | "pickup">("delivery");
+  const [orderType, setOrderType] = useState<"delivery" | "pickup">("pickup");
   const [selectedArea, setSelectedArea] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [showWarning, setShowWarning] = useState(false);
+
+  // Live Timer states
+  const [pktNow, setPktNow] = useState<Date>(getPKTTime());
+
+  // Update PKT timer every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPktNow(getPKTTime());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Determine delivery availability & countdown values
+  // Active window: 6:00 PM (18:00) to 3:30 AM (03:30) PKT
+  const deliveryStatus = React.useMemo(() => {
+    const hours = pktNow.getHours();
+    const minutes = pktNow.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+
+    const startMinutes = 18 * 60; // 6:00 PM
+    const endMinutes = 3 * 60 + 30; // 3:30 AM
+
+    const isAvailable = totalMinutes >= startMinutes || totalMinutes < endMinutes;
+
+    let countdownText = "";
+    if (isAvailable) {
+      // Countdown until 3:30 AM PKT
+      const target = new Date(pktNow);
+      target.setHours(3, 30, 0, 0);
+      if (totalMinutes >= startMinutes) {
+        // If it's currently evening before midnight, target is 3:30 AM tomorrow
+        target.setDate(target.getDate() + 1);
+      }
+      const diffMs = target.getTime() - pktNow.getTime();
+      const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
+      const h = Math.floor(diffSecs / 3600).toString().padStart(2, "0");
+      const m = Math.floor((diffSecs % 3600) / 60).toString().padStart(2, "0");
+      const s = (diffSecs % 60).toString().padStart(2, "0");
+      countdownText = `${h}:${m}:${s}`;
+    } else {
+      // Countdown until 6:00 PM PKT
+      const target = new Date(pktNow);
+      target.setHours(18, 0, 0, 0);
+      const diffMs = target.getTime() - pktNow.getTime();
+      const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
+      const h = Math.floor(diffSecs / 3600).toString().padStart(2, "0");
+      const m = Math.floor((diffSecs % 3600) / 60).toString().padStart(2, "0");
+      const s = (diffSecs % 60).toString().padStart(2, "0");
+      countdownText = `${h}:${m}:${s}`;
+    }
+
+    return {
+      isAvailable,
+      countdownText
+    };
+  }, [pktNow]);
+
+  // Adjust order type if delivery is not available
+  useEffect(() => {
+    if (!deliveryStatus.isAvailable && orderType === "delivery") {
+      setOrderType("pickup");
+    }
+  }, [deliveryStatus.isAvailable, orderType]);
 
   const subtotal = cartItems.reduce(
     (sum, cartItem) => sum + cartItem.item.price * cartItem.quantity,
@@ -79,7 +149,8 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
     if (orderType === "pickup") {
       return customerName.trim() !== "";
     }
-    return customerName.trim() !== "" && selectedArea !== "" && deliveryAddress.trim() !== "";
+    // For delivery, check fields and also verify time window is active
+    return deliveryStatus.isAvailable && customerName.trim() !== "" && selectedArea !== "" && deliveryAddress.trim() !== "";
   };
 
   const handleWhatsAppCheckout = () => {
@@ -247,9 +318,26 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
           <div className="p-6 border-t border-zinc-800 bg-zinc-900/90 space-y-4 max-h-[65%] overflow-y-auto">
             {/* Order Type Toggle */}
             <div className="space-y-3 border-b border-zinc-800 pb-4">
-              <h4 className="text-xs font-black text-red-500 uppercase tracking-wider">
-                Order Type
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-red-500 uppercase tracking-wider">
+                  Order Type
+                </h4>
+                {/* Dynamic Delivery Window Countdown Banner */}
+                <div className="flex items-center gap-1 text-[10px] bg-zinc-950 px-2.5 py-1 rounded-full border border-zinc-800 font-bold">
+                  <Clock className="w-3 h-3 text-red-500 animate-pulse" />
+                  {deliveryStatus.isAvailable ? (
+                    <span className="text-emerald-500">
+                      Ends In: <span className="font-mono">{deliveryStatus.countdownText}</span>
+                    </span>
+                  ) : (
+                    <span className="text-red-400">
+                      Opens In: <span className="font-mono">{deliveryStatus.countdownText}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Warnings and interactive toggle */}
               <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-xl p-1">
                 <button
                   onClick={() => setOrderType("pickup")}
@@ -263,21 +351,42 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
                   Pickup
                 </button>
                 <button
-                  onClick={() => setOrderType("delivery")}
+                  onClick={() => {
+                    if (deliveryStatus.isAvailable) {
+                      setOrderType("delivery");
+                    }
+                  }}
+                  disabled={!deliveryStatus.isAvailable}
                   className={`flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                    orderType === "delivery"
+                    !deliveryStatus.isAvailable
+                      ? "opacity-40 cursor-not-allowed text-zinc-600"
+                      : orderType === "delivery"
                       ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
                       : "text-zinc-400 hover:text-white"
                   }`}
+                  title={!deliveryStatus.isAvailable ? "Delivery starts at 6:00 PM PKT" : "Order Delivery"}
                 >
                   <MapPin className="w-4 h-4" />
                   Delivery
                 </button>
               </div>
+
+              {/* OUTSIDE delivery window warning message block */}
+              {!deliveryStatus.isAvailable && (
+                <div className="p-3 bg-red-950/40 border border-red-900/50 rounded-xl flex items-start gap-2.5 text-xs text-red-300">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="font-extrabold text-red-400">Delivery service is currently closed.</p>
+                    <p className="text-[11px] leading-relaxed text-zinc-400">
+                      Delivery hours are daily from <span className="text-red-300 font-bold">6:00 PM to 3:30 AM PKT</span>. You can still order via Pickup!
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Delivery Details Form - Only show for Delivery */}
-            {orderType === "delivery" && (
+            {orderType === "delivery" && deliveryStatus.isAvailable && (
               <div className="space-y-3 border-b border-zinc-800 pb-4">
                 <h4 className="text-xs font-black text-red-500 uppercase tracking-wider">
                   Delivery Details
