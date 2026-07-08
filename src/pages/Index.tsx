@@ -70,6 +70,14 @@ const Index = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  // AutoPlay logic for Controlled Carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [bannerImages]);
+
   // Calculate total cart value
   const cartTotal = useMemo(() => {
     return cartItems.reduce((sum, cartItem) => sum + cartItem.item.price * cartItem.quantity, 0);
@@ -263,7 +271,7 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Symmetrical Utility Icon Controls: Search & Cart matched exactly */}
+          {/* Utility Icon Controls: Symmetrical design exactly aligned horizontally & vertically on desktop and mobile */}
           <div className="flex items-center gap-3 justify-end flex-1 max-w-md h-full">
             {/* Search Trigger Button & sliding overlay */}
             <div ref={searchContainerRef} className="relative flex items-center h-full">
@@ -276,7 +284,7 @@ const Index = () => {
               
               {/* Sliding Input Box */}
               <div className={`absolute right-full mr-2 transition-all duration-300 transform origin-right ${
-                isSearchExpanded ? "w-48 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
+                isSearchExpanded ? "w-40 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
               }`}>
                 <input
                   type="text"
@@ -374,9 +382,8 @@ const Index = () => {
         {/* Carousel */}
         <Carousel
           images={bannerImages}
-          autoPlay={true}
-          interval={5000}
-          className="absolute inset-0 z-0"
+          currentSlide={currentSlide}
+          className="absolute inset-0 z-0 w-full h-full"
         />
         <SliderControls
           currentSlide={currentSlide}
@@ -552,81 +559,50 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Us Section */}
+      {/* About Us Section - Redesigned to be clean single column layout without paratha roll visual collage */}
       <section id="about" className="py-24 bg-white relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-50 rounded-full blur-3xl pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Story */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
-                <Flame className="w-3.5 h-3.5" />
-                Our Legacy
-              </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 leading-tight">
-                The Story of <br />
-                <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
-                  Hot N Tasty Roll BBQ
-                </span>
-              </h2>
-              <p className="text-zinc-700 leading-relaxed">
-                Located in the bustling heart of Gulistan-e-Johar, Hot N Tasty Roll BBQ has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
-              </p>
-              <p className="text-zinc-600 leading-relaxed">
-                Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
-              </p>
-
-              {/* Features Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0 border border-red-100">
-                    <ThumbsUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-zinc-900 text-sm">Unmatched Taste</h4>
-                    <p className="text-xs text-zinc-500 mt-0.5">Authentic local spices</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-50 rounded-lg text-red-600 shrink-0 border border-red-100">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-zinc-900 text-sm">Late Night</h4>
-                    <p className="text-xs text-zinc-500 mt-0.5">Open till 5:00 AM</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 shrink-0 border border-emerald-100">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-zinc-900 text-sm">100% Halal</h4>
-                    <p className="text-xs text-zinc-500 mt-0.5">Fresh ingredients daily</p>
-                  </div>
-                </div>
-              </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
+              <Flame className="w-3.5 h-3.5" />
+              Our Legacy
             </div>
+            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 leading-tight">
+              The Story of <br />
+              <span className="bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+                Hot N Tasty Roll BBQ
+              </span>
+            </h2>
+            <p className="text-zinc-700 leading-relaxed text-sm sm:text-base max-w-2xl mx-auto">
+              Located in the bustling heart of Gulistan-e-Johar, Hot N Tasty Roll BBQ has been serving up sizzling, spice-infused street food masterpieces. We believe in bold flavors, premium ingredients, and the magic of late-night street dining.
+            </p>
+            <p className="text-zinc-600 leading-relaxed text-sm sm:text-base max-w-2xl mx-auto">
+              Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
+            </p>
 
-            {/* Right: Visual Collage */}
-            <div className="relative">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 shadow-md">
-                <img
-                  src="https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=800&q=80"
-                  alt="Sizzling paratha roll preparation"
-                  className="w-full h-full object-cover"
-                />
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 max-w-2xl mx-auto">
+              <div className="flex flex-col items-center p-4 bg-zinc-50 border border-zinc-100 rounded-xl">
+                <div className="p-2.5 bg-red-50 rounded-lg text-red-600 border border-red-100 mb-2">
+                  <ThumbsUp className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-zinc-900 text-sm">Unmatched Taste</h4>
+                <p className="text-xs text-zinc-500 mt-1">Authentic local spices</p>
               </div>
-              <div className="absolute -bottom-6 -left-6 w-1/2 aspect-video rounded-xl overflow-hidden border border-zinc-200 shadow-2xl hidden sm:block">
-                <img
-                  src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80"
-                  alt="Juicy burger"
-                  className="w-full h-full object-cover"
-                />
+              <div className="flex flex-col items-center p-4 bg-zinc-50 border border-zinc-100 rounded-xl">
+                <div className="p-2.5 bg-red-50 rounded-lg text-red-600 border border-red-100 mb-2">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-zinc-900 text-sm">Late Night</h4>
+                <p className="text-xs text-zinc-500 mt-1">Open till 5:00 AM</p>
               </div>
-              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-red-600 to-red-500 p-6 rounded-2xl text-white shadow-xl hidden sm:block max-w-[200px]">
-                <p className="text-3xl font-black">1,032+</p>
-                <p className="text-xs font-bold text-white/80 mt-1">Happy Google Reviews</p>
+              <div className="flex flex-col items-center p-4 bg-zinc-50 border border-zinc-100 rounded-xl">
+                <div className="p-2.5 bg-emerald-50 rounded-lg text-emerald-600 border border-emerald-100 mb-2">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-zinc-900 text-sm">100% Halal</h4>
+                <p className="text-xs text-zinc-500 mt-1">Fresh ingredients daily</p>
               </div>
             </div>
           </div>
