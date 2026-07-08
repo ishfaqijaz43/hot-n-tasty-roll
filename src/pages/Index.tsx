@@ -40,12 +40,15 @@ const Index = () => {
     return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
   });
 
-  // Banner images state - updated by admin dashboard
-  const [bannerImages, setBannerImages] = useState([
-    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-  ]);
+  // Banner images state - updated by admin dashboard and persisted correctly
+  const [bannerImages, setBannerImages] = useState<string[]>(() => {
+    const saved = localStorage.getItem("hot_n_tasty_banners");
+    return saved ? JSON.parse(saved) : [
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+    ];
+  });
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -184,12 +187,8 @@ const Index = () => {
   };
 
   const handleAdminBannersChange = (newBanners: string[]) => {
-    setBannerImages((prev) => {
-      if (JSON.stringify(prev) !== JSON.stringify(newBanners)) {
-        return newBanners;
-      }
-      return prev;
-    });
+    setBannerImages(newBanners);
+    localStorage.setItem("hot_n_tasty_banners", JSON.stringify(newBanners));
   };
 
   const getItemQuantityInCart = (itemId: string) => {
@@ -201,6 +200,7 @@ const Index = () => {
     return (
       <HotNTastyAdminDashboard
         items={menuList}
+        banners={bannerImages}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
         onBannersChange={handleAdminBannersChange}
@@ -213,7 +213,7 @@ const Index = () => {
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-          {/* Logo with Fallback */}
+          {/* Logo Container */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-3 cursor-pointer group shrink-0"
@@ -263,44 +263,45 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Search Bar & Actions - Perfectly aligned and centered */}
-          <div className="flex items-center gap-3 justify-end flex-1 max-w-md">
-            {/* Expanding Search Bar */}
-            <div ref={searchContainerRef} className="relative flex items-center">
-              <Search className="absolute left-3 text-zinc-400 w-4 h-4 cursor-pointer z-10" 
+          {/* Symmetrical Utility Icon Controls: Search & Cart matched exactly */}
+          <div className="flex items-center gap-3 justify-end flex-1 max-w-md h-full">
+            {/* Search Trigger Button & sliding overlay */}
+            <div ref={searchContainerRef} className="relative flex items-center h-full">
+              <button
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-              />
-              <input
-                type="text"
-                placeholder="Search menu..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setIsSearchExpanded(true);
-                  setIsSearchFocused(true);
-                }}
-                onFocus={() => {
-                  setIsSearchExpanded(true);
-                  setIsSearchFocused(true);
-                }}
-                className={`pl-10 pr-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-250 ${
-                  isSearchExpanded ? "w-44 sm:w-60 opacity-100" : "w-10 opacity-0 pointer-events-none"
-                }`}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
+                className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 flex items-center justify-center shrink-0 w-11 h-11"
+              >
+                <Search className="w-5 h-5 text-zinc-700 hover:text-red-600 transition-colors" />
+              </button>
+              
+              {/* Sliding Input Box */}
+              <div className={`absolute right-full mr-2 transition-all duration-300 transform origin-right ${
+                isSearchExpanded ? "w-48 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
+              }`}>
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchFocused(true);
                   }}
-                  className="absolute right-3 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
-                >
-                  ✕
-                </button>
-              )}
+                  onFocus={() => setIsSearchFocused(true)}
+                  className="w-full pl-4 pr-10 py-2.5 bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm shadow-xl"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
               {/* Autocomplete Suggestions Dropdown */}
               {isSearchFocused && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-64 overflow-y-auto">
+                <div className="absolute top-full right-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 w-64 max-h-64 overflow-y-auto">
                   {searchSuggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
@@ -323,7 +324,7 @@ const Index = () => {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center"
+              className="relative p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center w-11 h-11"
             >
               <ShoppingBag className="w-5 h-5 group-hover:text-red-600 transition-colors" />
               {totalCartCount > 0 && (
@@ -336,7 +337,7 @@ const Index = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center"
+              className="lg:hidden p-3 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center w-11 h-11"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
