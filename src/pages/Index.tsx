@@ -377,13 +377,13 @@ const Index = () => {
         )}
       </header>
 
-      {/* Hero Section with Carousel */}
-      <section id="hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden py-16 bg-white">
+      {/* Hero Section with Responsive Carousel Heights & Perfect Image Filling */}
+      <section id="hero" className="relative w-full h-[400px] sm:h-[550px] lg:h-[650px] flex items-center justify-center overflow-hidden bg-zinc-950">
         {/* Carousel */}
         <Carousel
           images={bannerImages}
           currentSlide={currentSlide}
-          className="absolute inset-0 z-0 w-full h-full"
+          className="absolute inset-0 w-full h-full z-0"
         />
         <SliderControls
           currentSlide={currentSlide}
@@ -391,29 +391,29 @@ const Index = () => {
           onChange={setCurrentSlide}
         />
 
-        {/* Content Overlay */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-6 bg-black/45 backdrop-blur-[2px] p-8 sm:p-12 rounded-3xl border border-white/10 shadow-2xl">
+        {/* Content Overlay - Perfectly centered vertically & horizontally */}
+        <div className="relative z-10 max-w-4xl mx-4 sm:mx-auto text-center space-y-4 sm:space-y-6 bg-black/50 backdrop-blur-[2px] p-6 sm:p-12 rounded-3xl border border-white/10 shadow-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs font-black uppercase tracking-wider">
             <Flame className="w-4 h-4 animate-bounce" />
             Johar's No. 1 Roll & BBQ Point
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow">
+          <h1 className="text-3xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow">
             Hot N Tasty <span className="text-red-500">Roll BBQ</span>
           </h1>
-          <p className="text-zinc-200 text-sm sm:text-lg max-w-2xl mx-auto drop-shadow-sm font-semibold">
+          <p className="text-zinc-200 text-xs sm:text-lg max-w-2xl mx-auto drop-shadow-sm font-semibold leading-relaxed">
             Fresh, sizzling, charcoal-grilled skewers, crispy deep-fried broast, and loaded special mayo rolls prepared hot for you daily in Gulistan-e-johar.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
             <button
               onClick={() => scrollToSection("menu")}
-              className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl text-sm transition-all shadow-lg shadow-red-600/30 flex items-center gap-2 hover:scale-[1.02]"
+              className="px-5 py-2.5 sm:px-6 sm:py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-red-600/30 flex items-center gap-2 hover:scale-[1.02]"
             >
               Order Online Now
               <ChevronRight className="w-4 h-4" />
             </button>
             <button
               onClick={() => scrollToSection("location")}
-              className="px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-sm transition-all border border-white/20 backdrop-blur-sm"
+              className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-xs sm:text-sm transition-all border border-white/20 backdrop-blur-sm"
             >
               Location & Timings
             </button>
