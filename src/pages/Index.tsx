@@ -44,7 +44,7 @@ const Index = () => {
   const [bannerImages, setBannerImages] = useState<string[]>(() => {
     const saved = localStorage.getItem("hot_n_tasty_banners");
     return saved ? JSON.parse(saved) : [
-      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+      "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg",
       "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
     ];
@@ -77,6 +77,19 @@ const Index = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, [bannerImages]);
+
+  // Synchronize localStorage in case the first slot is filled with the older default Unsplash photo
+  useEffect(() => {
+    setBannerImages((prev) => {
+      if (prev[0]?.includes("photo-1555939594-58d7cb561ad1")) {
+        const updated = [...prev];
+        updated[0] = "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg";
+        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(updated));
+        return updated;
+      }
+      return prev;
+    });
+  }, []);
 
   // Calculate total cart value
   const cartTotal = useMemo(() => {
@@ -398,10 +411,10 @@ const Index = () => {
             Johar's No. 1 Roll & BBQ Point
           </div>
           <h1 className="text-3xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow">
-            Hot N Tasty <span className="text-red-500">Roll BBQ</span>
+            WELCOME TO <span className="text-red-500">HOT N TASTY ROLL</span>
           </h1>
           <p className="text-zinc-200 text-xs sm:text-lg max-w-2xl mx-auto drop-shadow-sm font-semibold leading-relaxed">
-            Fresh, sizzling, charcoal-grilled skewers, crispy deep-fried broast, and loaded special mayo rolls prepared hot for you daily in Gulistan-e-johar.
+            BEST BBQ & ROLLS IN KARACHI!
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <button
