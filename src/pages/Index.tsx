@@ -7,6 +7,7 @@ import {
   Search,
   ShoppingBag,
   Plus,
+  Minus,
   Utensils,
   Sparkles,
   Star,
@@ -19,7 +20,8 @@ import {
   Wifi,
   Smile,
   Coffee,
-  ArrowRight
+  ArrowRight,
+  Heart
 } from "lucide-react";
 import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/data/hotNTastyMenu";
 import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
@@ -42,7 +44,7 @@ const Index = () => {
     return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
   });
 
-  // Banner images state - will be updated by admin dashboard
+  // Banner images state - updated by admin dashboard
   const [bannerImages, setBannerImages] = useState([
     "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
     "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
@@ -57,6 +59,9 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
+  
+  // Track failed logo image so we fallback gracefully
+  const [logoHasError, setLogoHasError] = useState(false);
 
   // Search Autocomplete States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -74,11 +79,15 @@ const Index = () => {
   // Filter menu items based on category and search query
   const filteredItems = useMemo(() => {
     return menuList.filter((item) => {
+      // Direct comparison with case insensitivity or "all" default
       const matchesCategory =
-        selectedCategory === "all" || item.category === selectedCategory;
+        selectedCategory.toLowerCase() === "all" || 
+        item.category.toLowerCase() === selectedCategory.toLowerCase();
+      
       const matchesSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
       return matchesCategory && matchesSearch;
     });
   }, [menuList, selectedCategory, searchQuery]);
@@ -119,6 +128,7 @@ const Index = () => {
       return [...prev, { item, quantity: 1 }];
     });
     setShowCartNotification(true);
+    toast.success(`Added ${item.name} to cart!`);
   };
 
   const handleUpdateQuantity = (itemId: string, delta: number) => {
@@ -178,11 +188,8 @@ const Index = () => {
     toast.info("Logged out of Admin Panel.");
   };
 
-  // Admin Dashboard Banner Handler - FIXED to prevent state overwrite
   const handleAdminBannersChange = (newBanners: string[]) => {
-    // Prevent immediate re-fetch or revert by using functional update
     setBannerImages((prev) => {
-      // Only update if the new banners are actually different
       if (JSON.stringify(prev) !== JSON.stringify(newBanners)) {
         return newBanners;
       }
@@ -190,7 +197,12 @@ const Index = () => {
     });
   };
 
-  // If Admin Mode is active, render the Admin Dashboard instead of the customer view
+  // Check if item is already in cart to display custom quantity widget on menu card
+  const getItemQuantityInCart = (itemId: string) => {
+    const found = cartItems.find((i) => i.item.id === itemId);
+    return found ? found.quantity : 0;
+  };
+
   if (isAdminMode) {
     return (
       <HotNTastyAdminDashboard
@@ -205,9 +217,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 transition-all shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-          {/* Logo */}
+          {/* Logo with Fallback */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-2.5 cursor-pointer group shrink-0"
@@ -215,13 +227,25 @@ const Index = () => {
             <div className="w-11 h-11 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               <Flame className="w-6 h-6 text-white animate-pulse" />
             </div>
-            <div className="hidden sm:block">
-              {/* Logo image - using the uploaded file from public folder */}
-              <img 
-                src="/logo.jpg" 
-                alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
-                className="h-10 w-auto object-contain" 
-              />
+            
+            <div className="flex flex-col">
+              {!logoHasError ? (
+                <img 
+                  src="/logo.jpg" 
+                  alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
+                  className="h-10 w-auto object-contain"
+                  onError={() => setLogoHasError(true)}
+                />
+              ) : (
+                <div className="flex flex-col">
+                  <span className="text-xl font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors">
+                    HOT N <span className="text-red-600">TASTY</span>
+                  </span>
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
+                    Roll BBQ Johar
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -260,21 +284,21 @@ const Index = () => {
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
+                  setIsSearchExpanded(true);
                   setIsSearchFocused(true);
                 }}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => {
-                  if (!searchQuery) setIsSearchExpanded(false);
+                onFocus={() => {
+                  setIsSearchExpanded(true);
+                  setIsSearchFocused(true);
                 }}
-                className={`pl-10 pr-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200 ${
-                  isSearchExpanded ? "w-56 sm:w-64 opacity-100" : "w-0 opacity-0 pointer-events-none"
+                className={`pl-10 pr-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-250 ${
+                  isSearchExpanded ? "w-56 sm:w-64 opacity-100" : "w-10 opacity-0 pointer-events-none"
                 }`}
               />
-              {searchQuery && isSearchExpanded && (
+              {searchQuery && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
-                    setIsSearchExpanded(false);
                   }}
                   className="absolute right-3 text-zinc-400 hover:text-zinc-900 text-xs font-bold"
                 >
@@ -291,7 +315,6 @@ const Index = () => {
                       onMouseDown={() => {
                         setSearchQuery(suggestion.name);
                         setIsSearchFocused(false);
-                        setIsSearchExpanded(false);
                         scrollToSection("menu");
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-bold transition-colors border-b border-zinc-100 last:border-0 block"
@@ -368,17 +391,33 @@ const Index = () => {
           onChange={setCurrentSlide}
         />
 
-        {/* Content */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 text-center space-y-8">
-          {/* Logo image in hero section */}
-          <img 
-            src="/logo.jpg" 
-            alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
-            className="h-16 w-auto object-contain mb-4 mx-auto" 
-          />
-          <span className="bg-gradient-to-r from-red-600 via-red-500 to-red-800 bg-clip-text text-transparent">
-            "Bringing Out The Best !!!"
-          </span>
+        {/* Content Overlay */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-6 bg-black/45 backdrop-blur-[2px] p-8 sm:p-12 rounded-3xl border border-white/10 shadow-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-full text-xs font-black uppercase tracking-wider">
+            <Flame className="w-4 h-4 animate-bounce" />
+            Johar's No. 1 Roll & BBQ Point
+          </div>
+          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none drop-shadow">
+            Hot N Tasty <span className="text-red-500">Roll BBQ</span>
+          </h1>
+          <p className="text-zinc-200 text-sm sm:text-lg max-w-2xl mx-auto drop-shadow-sm font-semibold">
+            Fresh, sizzling, charcoal-grilled skewers, crispy deep-fried broast, and loaded special mayo rolls prepared hot for you daily in Gulistan-e-johar.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <button
+              onClick={() => scrollToSection("menu")}
+              className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl text-sm transition-all shadow-lg shadow-red-600/30 flex items-center gap-2 hover:scale-[1.02]"
+            >
+              Order Online Now
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scrollToSection("location")}
+              className="px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl text-sm transition-all border border-white/20 backdrop-blur-sm"
+            >
+              Location & Timings
+            </button>
+          </div>
         </div>
       </section>
 
@@ -391,27 +430,26 @@ const Index = () => {
               <Sparkles className="w-3.5 h-3.5" />
               Freshly Prepared
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900">
+            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight">
               Explore Our Sizzling Menu
             </h2>
             <p className="text-zinc-600 text-sm sm:text-base">
-              From spicy Chicken Rolls to loaded burgers and premium BBQ plates, we have something to satisfy every craving. Filter by category or search above.
+              From spicy Chicken Rolls to loaded burgers, chinese specialties, and premium BBQ plates, we have something to satisfy every craving. Filter by category or search above.
             </p>
           </div>
 
-          {/* Category Filter Buttons - THIS IS THE MENU SECTION CATEGORIES */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8">
+          {/* Category Filter Buttons */}
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
             {HOT_N_TASTY_CATEGORIES.map((category) => (
               <button
                 key={category.id}
                 onClick={() => {
                   setSelectedCategory(category.id);
-                  scrollToSection("menu");
                 }}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
-                  selectedCategory === category.id
-                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white border-red-600 scale-105"
-                    : "bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200"
+                  selectedCategory.toLowerCase() === category.id.toLowerCase()
+                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white border-red-600 scale-105 shadow-md shadow-red-600/20"
+                    : "bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-200"
                 }`}
               >
                 {category.name}
@@ -420,6 +458,105 @@ const Index = () => {
           </div>
 
           {/* Food Grid */}
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 p-8 max-w-md mx-auto">
+              <Utensils className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-zinc-800">No items found</h3>
+              <p className="text-zinc-500 text-xs sm:text-sm mt-1">
+                We couldn't find any menu items in this category matching your search. Please check another tab or search query.
+              </p>
+              <button
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setSearchQuery("");
+                }}
+                className="mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors"
+              >
+                Reset Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {filteredItems.map((item) => {
+                const qtyInCart = getItemQuantityInCart(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
+                  >
+                    {/* Item Image */}
+                    <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        onError={(e) => {
+                          // Clean fallback image if direct link is broken
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
+                        }}
+                      />
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-red-600 shadow-sm border border-zinc-200/50">
+                        Rs. {item.price}
+                      </div>
+                      <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
+                        {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                      <div className="space-y-1">
+                        <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
+                          {item.name}
+                        </h3>
+                        <p className="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      {/* Buy Widget */}
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
+                        <span className="text-red-600 font-black text-lg">
+                          Rs. {item.price}
+                        </span>
+
+                        {qtyInCart > 0 ? (
+                          <div className="flex items-center bg-red-600 text-white rounded-xl p-1 shadow-md shadow-red-600/10">
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, -1)}
+                              className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                              title="Decrease quantity"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-3 text-xs font-black text-white">
+                              {qtyInCart}
+                            </span>
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, 1)}
+                              className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                              title="Increase quantity"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleAddToCart(item)}
+                            className="px-4 py-2 bg-zinc-900 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:shadow-lg active:scale-95"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            Add to Cart
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -700,12 +837,15 @@ const Index = () => {
             <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            {/* Logo image in footer */}
-            <img 
-              src="/logo.jpg" 
-              alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
-              className="h-8 w-auto object-contain" 
-            />
+            
+            <div className="flex flex-col">
+              <span className="text-xl font-black tracking-tight text-zinc-900">
+                HOT N <span className="text-red-600">TASTY</span>
+              </span>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
+                Roll BBQ Johar
+              </span>
+            </div>
           </div>
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
             Gulistan-e-Johar's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
@@ -747,7 +887,7 @@ const Index = () => {
         onSuccess={() => setIsAdminMode(true)}
       />
 
-      {/* Smooth Animated Slide-up Cart Notification Bar - Shows Cumulative Total */}
+      {/* Smooth Animated Slide-up Cart Notification Bar */}
       {showCartNotification && cartItems.length > 0 && !isCartOpen && (
         <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[320px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -756,7 +896,7 @@ const Index = () => {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black text-white">
-                Cart Total Updated - Rs. {cartTotal}
+                Cart Total - Rs. {cartTotal}
               </p>
             </div>
           </div>
