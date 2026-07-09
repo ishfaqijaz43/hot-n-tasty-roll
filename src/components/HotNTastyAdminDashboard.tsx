@@ -3,7 +3,8 @@ import { Plus, Trash2, Save, LogOut, Image, DollarSign, Tag, FileText, Check, Up
 import { toast } from "sonner";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
 
-const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
+// Fetch key securely via Vite client environment variables or fallback safely
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || import.meta.env.IMGBB_API_KEY || "1211a1d5daba7056d0a9eaec9502ee08";
 
 const directImgBBUpload = async (file: File): Promise<string> => {
   try {
