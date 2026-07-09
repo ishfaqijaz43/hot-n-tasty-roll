@@ -8,7 +8,7 @@ export const isSupabaseConfigured = true;
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
- * Fetch all live menu items from Supabase
+ * Fetch all live menu items from Supabase with full error stacktrace output
  */
 export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
   try {
@@ -20,13 +20,13 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
     if (error) throw error;
     return data as MenuItem[];
   } catch (err) {
-    console.warn("Supabase fetch menu failed", err);
+    console.error("Supabase menu retrieval failed. Error stack:", err);
     return null;
   }
 }
 
 /**
- * Upsert menu items list to live Supabase database
+ * Upsert menu items list to live Supabase database with full error stacktrace output
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
   try {
@@ -53,13 +53,13 @@ export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
     if (insertError) throw insertError;
     return true;
   } catch (err) {
-    console.error("Supabase save menu failed", err);
+    console.error("Supabase menu updates synchronization failed. Error stack:", err);
     return false;
   }
 }
 
 /**
- * Fetch homepage banner URLs from Supabase (supporting both 'url' and 'image_url' schemas dynamically)
+ * Fetch homepage banner URLs from Supabase (supporting both 'url' and 'image_url' schemas dynamically) with error logs
  */
 export async function getSupabaseBanners(): Promise<string[] | null> {
   try {
@@ -71,7 +71,7 @@ export async function getSupabaseBanners(): Promise<string[] | null> {
     if (error) throw error;
     return data.map((b: any) => b.url || b.image_url || b.image);
   } catch (err) {
-    console.warn("Supabase fetch banners failed", err);
+    console.error("Supabase fetch banner sliders failed. Error stack:", err);
     return null;
   }
 }
@@ -111,7 +111,7 @@ export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
     
     throw new Error(errImgUrl.message || "All fallback insert attempts failed.");
   } catch (err) {
-    console.error("Supabase save banners failed", err);
+    console.error("Supabase save banner sliders failed. Error stack:", err);
     return false;
   }
 }
@@ -130,7 +130,7 @@ export async function getSupabaseLogo(): Promise<string | null> {
     if (error) throw error;
     return data?.value || null;
   } catch (err) {
-    console.warn("Supabase fetch logo failed", err);
+    console.error("Supabase fetch settings key (logo) failed. Error stack:", err);
     return null;
   }
 }
@@ -147,7 +147,7 @@ export async function saveSupabaseLogo(url: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (err) {
-    console.error("Supabase save logo failed", err);
+    console.error("Supabase save settings key (logo) failed. Error stack:", err);
     return false;
   }
 }

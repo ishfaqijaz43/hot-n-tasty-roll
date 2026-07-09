@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
 
 // Fetch key securely via Vite client environment variables or fallback safely
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || import.meta.env.IMGBB_API_KEY || "1211a1d5daba7056d0a9eaec9502ee08";
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || "1211a1d5daba7056d0a9eaec9502ee08";
 
 const directImgBBUpload = async (file: File): Promise<string> => {
   try {
@@ -21,6 +21,7 @@ const directImgBBUpload = async (file: File): Promise<string> => {
       throw new Error(data.error?.message || "Failed to upload image to ImgBB");
     }
   } catch (error: any) {
+    console.error("ImgBB direct upload failure details:", error);
     alert("ImgBB Upload Error: " + (error?.message || error));
     throw error;
   }
