@@ -193,7 +193,7 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
     }
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/923312400434?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/923003919005?text=${encodedMessage}`;
     window.open(whatsappUrl, "_blank");
   };
 

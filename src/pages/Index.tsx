@@ -486,7 +486,8 @@ const Index = () => {
                 key={category.id}
                 onClick={() => {
                   setSelectedCategory(category.id);
-                  scrollToSection("menu");
+                  // Fixed scroll behavior to scroll smoothly directly down into the actual filtered items grid
+                  setTimeout(() => scrollToSection("menu-items-grid"), 50);
                 }}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
                   selectedCategory.toLowerCase() === category.id.toLowerCase()
@@ -499,101 +500,104 @@ const Index = () => {
             ))}
           </div>
 
-          {filteredItems.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 p-8 max-w-md mx-auto">
-              <Utensils className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-zinc-800">No items found</h3>
-              <p className="text-zinc-500 text-xs sm:text-sm mt-1">
-                We couldn't find any menu items in this category matching your search. Please check another tab or search query.
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setSearchQuery("");
-                }}
-                className="mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors"
-              >
-                Reset Filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredItems.map((item) => {
-                const qtyInCart = getItemQuantityInCart(item.id);
-                return (
-                  <div
-                    key={item.id}
-                    className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
-                  >
-                    <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
-                        }}
-                      />
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-red-600 shadow-sm border border-zinc-200/50">
-                        Rs. {item.price}
-                      </div>
-                      <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
-                        {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
-                      </span>
-                    </div>
-
-                    <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                      <div className="space-y-1">
-                        <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
-                          {item.name}
-                        </h3>
-                        <p className="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">
-                          {item.description}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
-                        <span className="text-red-600 font-black text-lg">
+          {/* Sub-container target anchor with correct sticky header scroll-margin-top offset */}
+          <div id="menu-items-grid" className="scroll-mt-28">
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 p-8 max-w-md mx-auto">
+                <Utensils className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-zinc-800">No items found</h3>
+                <p className="text-zinc-500 text-xs sm:text-sm mt-1">
+                  We couldn't find any menu items in this category matching your search. Please check another tab or search query.
+                </p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setSearchQuery("");
+                  }}
+                  className="mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl text-xs transition-colors"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {filteredItems.map((item) => {
+                  const qtyInCart = getItemQuantityInCart(item.id);
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
+                    >
+                      <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
+                          }}
+                        />
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-red-600 shadow-sm border border-zinc-200/50">
                           Rs. {item.price}
+                        </div>
+                        <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
+                          {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
                         </span>
+                      </div>
 
-                        {qtyInCart > 0 ? (
-                          <div className="flex items-center bg-red-600 text-white rounded-xl p-1 shadow-md shadow-red-600/10">
+                      <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
+                            {item.name}
+                          </h3>
+                          <p className="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
+                          <span className="text-red-600 font-black text-lg">
+                            Rs. {item.price}
+                          </span>
+
+                          {qtyInCart > 0 ? (
+                            <div className="flex items-center bg-red-600 text-white rounded-xl p-1 shadow-md shadow-red-600/10">
+                              <button
+                                onClick={() => handleUpdateQuantity(item.id, -1)}
+                                className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                                title="Decrease quantity"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="px-3 text-xs font-black text-white">
+                                {qtyInCart}
+                              </span>
+                              <button
+                                onClick={() => handleUpdateQuantity(item.id, 1)}
+                                className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                                title="Increase quantity"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
                             <button
-                              onClick={() => handleUpdateQuantity(item.id, -1)}
-                              className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
-                              title="Decrease quantity"
-                            >
-                              <Minus className="w-3.5 h-3.5" />
-                            </button>
-                            <span className="px-3 text-xs font-black text-white">
-                              {qtyInCart}
-                            </span>
-                            <button
-                              onClick={() => handleUpdateQuantity(item.id, 1)}
-                              className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
-                              title="Increase quantity"
+                              onClick={() => handleAddToCart(item)}
+                              className="px-4 py-2 bg-zinc-900 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:shadow-lg active:scale-95"
                             >
                               <Plus className="w-3.5 h-3.5" />
+                              Add to Cart
                             </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleAddToCart(item)}
-                            className="px-4 py-2 bg-zinc-900 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:shadow-lg active:scale-95"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            Add to Cart
-                          </button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
