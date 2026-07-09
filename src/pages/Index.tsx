@@ -216,7 +216,7 @@ const Index = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     setIsMobileMenuOpen(false);
   };
@@ -465,7 +465,7 @@ const Index = () => {
       </section>
 
       {/* Interactive Menu Section */}
-      <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200">
+      <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200 scroll-mt-24 sm:scroll-mt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
@@ -486,6 +486,7 @@ const Index = () => {
                 key={category.id}
                 onClick={() => {
                   setSelectedCategory(category.id);
+                  scrollToSection("menu");
                 }}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
                   selectedCategory.toLowerCase() === category.id.toLowerCase()
