@@ -32,6 +32,8 @@ import {
   saveSupabaseMenu, 
   getSupabaseBanners, 
   saveSupabaseBanners,
+  getSupabaseLogo,
+  saveSupabaseLogo,
   isSupabaseConfigured 
 } from "@/lib/supabase";
 
@@ -41,13 +43,11 @@ interface CartItem {
 }
 
 const Index = () => {
-  // Dynamic Menu List State with LocalStorage persistence as fallback
   const [menuList, setMenuList] = useState<MenuItem[]>(() => {
     const saved = localStorage.getItem("hot_n_tasty_menu");
     return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
   });
 
-  // Banner images state with LocalStorage persistence as fallback
   const [bannerImages, setBannerImages] = useState<string[]>(() => {
     const saved = localStorage.getItem("hot_n_tasty_banners");
     return saved ? JSON.parse(saved) : [
@@ -55,6 +55,10 @@ const Index = () => {
       "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
       "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
     ];
+  });
+
+  const [logoImage, setLogoImage] = useState<string>(() => {
+    return localStorage.getItem("hot_n_tasty_logo") || "/logo.jpg";
   });
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -66,18 +70,14 @@ const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
   
-  // Track failed logo image so we fallback gracefully
   const [logoHasError, setLogoHasError] = useState(false);
 
-  // Search Autocomplete States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Admin Panel States
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // AutoPlay logic for Controlled Carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
@@ -85,7 +85,6 @@ const Index = () => {
     return () => clearInterval(timer);
   }, [bannerImages]);
 
-  // Synchronize localStorage in case the first slot is filled with the older default Unsplash photo
   useEffect(() => {
     setBannerImages((prev) => {
       if (prev[0]?.includes("photo-1555939594-58d7cb561ad1")) {
@@ -98,13 +97,9 @@ const Index = () => {
     });
   }, []);
 
-  // Fetch central database state from Supabase on component mounting
   useEffect(() => {
     const loadCloudData = async () => {
-      if (!isSupabaseConfigured) {
-        console.log("Supabase parameters are not configured yet. Running in offline/localStorage mode.");
-        return;
-      }
+      if (!isSupabaseConfigured) return;
       
       const menuCloud = await getSupabaseMenu();
       if (menuCloud && menuCloud.length > 0) {
@@ -117,17 +112,21 @@ const Index = () => {
         setBannerImages(bannersCloud);
         localStorage.setItem("hot_n_tasty_banners", JSON.stringify(bannersCloud));
       }
+
+      const logoCloud = await getSupabaseLogo();
+      if (logoCloud) {
+        setLogoImage(logoCloud);
+        localStorage.setItem("hot_n_tasty_logo", logoCloud);
+      }
     };
 
     loadCloudData();
   }, []);
 
-  // Calculate total cart value
   const cartTotal = useMemo(() => {
     return cartItems.reduce((sum, cartItem) => sum + cartItem.item.price * cartItem.quantity, 0);
   }, [cartItems]);
 
-  // Filter menu items based on category and search query
   const filteredItems = useMemo(() => {
     return menuList.filter((item) => {
       const matchesCategory =
@@ -142,7 +141,6 @@ const Index = () => {
     });
   }, [menuList, selectedCategory, searchQuery]);
 
-  // Autocomplete suggestions
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
     return menuList
@@ -152,7 +150,6 @@ const Index = () => {
       .slice(0, 5);
   }, [menuList, searchQuery]);
 
-  // Close search suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -166,7 +163,6 @@ const Index = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Cart Handlers
   const handleAddToCart = (item: MenuItem) => {
     setCartItems((prev) => {
       const existing = prev.find((i) => i.item.id === item.id);
@@ -225,7 +221,6 @@ const Index = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Admin Handlers - Live cloud push with standard fallback
   const handleSaveMenu = async (updatedItems: MenuItem[]) => {
     setMenuList(updatedItems);
     localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
@@ -241,7 +236,7 @@ const Index = () => {
         toast.error("Failed to connect to Supabase. Saved to browser locally.");
       }
     } else {
-      toast.success("Menu changes saved locally! (Configure Supabase keys for global real-time synchronization)");
+      toast.success("Menu changes saved locally!");
     }
   };
 
@@ -267,6 +262,23 @@ const Index = () => {
     }
   };
 
+  const handleAdminLogoChange = async (newLogo: string) => {
+    setLogoImage(newLogo);
+    localStorage.setItem("hot_n_tasty_logo", newLogo);
+
+    if (isSupabaseConfigured) {
+      const syncLoader = toast.loading("Updating live restaurant logo...");
+      const success = await saveSupabaseLogo(newLogo);
+      toast.dismiss(syncLoader);
+
+      if (success) {
+        toast.success("Logo updated globally!");
+      } else {
+        toast.error("Logo update sync error.");
+      }
+    }
+  };
+
   const getItemQuantityInCart = (itemId: string) => {
     const found = cartItems.find((i) => i.item.id === itemId);
     return found ? found.quantity : 0;
@@ -277,9 +289,11 @@ const Index = () => {
       <HotNTastyAdminDashboard
         items={menuList}
         banners={bannerImages}
+        logo={logoImage}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
         onBannersChange={handleAdminBannersChange}
+        onLogoChange={handleAdminLogoChange}
       />
     );
   }
@@ -289,7 +303,6 @@ const Index = () => {
       {/* Sticky Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex flex-row justify-between items-center flex-nowrap gap-4">
-          {/* Logo Container - Proportionally Scaled on Mobile */}
           <div
             onClick={() => scrollToSection("hero")}
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0"
@@ -297,7 +310,7 @@ const Index = () => {
             <div className="relative w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center overflow-hidden shadow-md sm:shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               {!logoHasError ? (
                 <img 
-                  src="/logo.jpg" 
+                  src={logoImage} 
                   alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
                   className="w-full h-full object-cover"
                   onError={() => setLogoHasError(true)}
@@ -317,7 +330,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 shrink-0">
             <button
               onClick={() => scrollToSection("menu")}
@@ -339,9 +351,7 @@ const Index = () => {
             </button>
           </nav>
 
-          {/* Symmetrical Utility Icon Controls: Clean, matching, horizontal row with gap */}
           <div className="flex items-center gap-2 sm:gap-3 justify-end shrink-0">
-            {/* Search Trigger Button & sliding overlay */}
             <div ref={searchContainerRef} className="relative flex items-center">
               <button
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
@@ -350,7 +360,6 @@ const Index = () => {
                 <Search className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-700 hover:text-red-600 transition-colors" />
               </button>
               
-              {/* Sliding Input Box - Width restricted cleanly on tiny displays */}
               <div className={`absolute right-full mr-2 transition-all duration-300 transform origin-right ${
                 isSearchExpanded ? "w-28 xs:w-36 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
               }`}>
@@ -375,7 +384,6 @@ const Index = () => {
                 )}
               </div>
 
-              {/* Autocomplete Suggestions Dropdown */}
               {isSearchFocused && searchSuggestions.length > 0 && (
                 <div className="absolute top-full right-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 w-60 sm:w-64 max-h-64 overflow-y-auto">
                   {searchSuggestions.map((suggestion) => (
@@ -397,7 +405,6 @@ const Index = () => {
               )}
             </div>
 
-            {/* Cart Button - Perfectly styled matching Search */}
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative w-10 h-10 sm:w-11 sm:h-11 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-all duration-200 hover:border-red-500/50 group shrink-0 flex items-center justify-center"
@@ -410,7 +417,6 @@ const Index = () => {
               )}
             </button>
 
-            {/* Mobile Menu Toggle - Perfectly styled matching Search & Cart */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden w-10 h-10 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-xl text-zinc-800 transition-colors shrink-0 flex items-center justify-center"
@@ -420,7 +426,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
             <button
@@ -445,9 +450,8 @@ const Index = () => {
         )}
       </header>
 
-      {/* Hero Section with Responsive Carousel Heights & Perfect Image Filling */}
+      {/* Hero Section */}
       <section id="hero" className="relative w-full aspect-video sm:aspect-none h-auto sm:h-[550px] lg:h-[650px] flex items-center justify-center overflow-hidden bg-zinc-950">
-        {/* Carousel */}
         <Carousel
           images={bannerImages}
           currentSlide={currentSlide}
@@ -463,7 +467,6 @@ const Index = () => {
       {/* Interactive Menu Section */}
       <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
               <Sparkles className="w-3.5 h-3.5" />
@@ -477,7 +480,6 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Category Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
             {HOT_N_TASTY_CATEGORIES.map((category) => (
               <button
@@ -496,7 +498,6 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Food Grid */}
           {filteredItems.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 p-8 max-w-md mx-auto">
               <Utensils className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
@@ -523,7 +524,6 @@ const Index = () => {
                     key={item.id}
                     className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
                   >
-                    {/* Item Image */}
                     <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
                       <img
                         src={item.image}
@@ -542,7 +542,6 @@ const Index = () => {
                       </span>
                     </div>
 
-                    {/* Content */}
                     <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                       <div className="space-y-1">
                         <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
@@ -553,7 +552,6 @@ const Index = () => {
                         </p>
                       </div>
 
-                      {/* Buy Widget */}
                       <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
                         <span className="text-red-600 font-black text-lg">
                           Rs. {item.price}
@@ -620,7 +618,6 @@ const Index = () => {
               Our signature recipes are crafted with hand-picked local spices, fresh meats, and cooked to perfection on high-heat woks. Whether it's our legendary Chicken Chatni Rolls, crispy golden Broasts, or loaded burgers, every bite is a celebration of Karachi's vibrant culinary spirit.
             </p>
 
-            {/* Features Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 max-w-2xl mx-auto">
               <div className="flex flex-col items-center p-4 bg-zinc-50 border border-zinc-100 rounded-xl">
                 <div className="p-2.5 bg-red-50 rounded-lg text-red-600 border border-red-100 mb-2">
@@ -732,7 +729,6 @@ const Index = () => {
       <section id="location" className="py-24 bg-white border-t border-zinc-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Details */}
             <div className="space-y-8">
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
@@ -747,7 +743,6 @@ const Index = () => {
                 </p>
               </div>
 
-              {/* Contact Info Cards */}
               <div className="space-y-4">
                 <div className="flex gap-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 shadow-sm">
                   <div className="p-3 bg-red-50 rounded-xl text-red-600 shrink-0 border border-red-100">
@@ -813,7 +808,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right: Map Placeholder */}
             <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex flex-col items-center justify-center text-center p-8 space-y-4 shadow-sm">
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]" />
               
@@ -861,7 +855,6 @@ const Index = () => {
             Gulistan-e-Johar's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
           </p>
           
-          {/* Staff Login Link */}
           <div className="pt-2">
             <button
               onClick={() => setIsLoginModalOpen(true)}
@@ -880,7 +873,6 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Shopping Cart Drawer */}
       <HotNTastyCartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
@@ -890,14 +882,12 @@ const Index = () => {
         onClearCart={handleClearCart}
       />
 
-      {/* Staff Login Modal */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onSuccess={() => setIsAdminMode(true)}
       />
 
-      {/* Smooth Animated Slide-up Cart Notification Bar */}
       {showCartNotification && cartItems.length > 0 && !isCartOpen && (
         <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[320px] bg-zinc-900 text-white p-4 rounded-2xl shadow-2xl border border-zinc-800 z-40 animate-in slide-in-from-bottom-10 duration-300 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">

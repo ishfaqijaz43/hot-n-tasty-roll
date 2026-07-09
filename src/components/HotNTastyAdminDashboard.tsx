@@ -5,7 +5,6 @@ import { MenuItem, HOT_N_TASTY_CATEGORIES } from "@/data/hotNTastyMenu";
 
 const IMGBB_API_KEY = "1211a1d5daba7056d0a9eaec9502ee08";
 
-// Standalone helper: direct ImgBB upload with alert on error
 const directImgBBUpload = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
@@ -29,20 +28,25 @@ const directImgBBUpload = async (file: File): Promise<string> => {
 interface HotNTastyAdminDashboardProps {
   items: MenuItem[];
   banners: string[];
+  logo: string;
   onSave: (updatedItems: MenuItem[]) => void;
   onLogout: () => void;
   onBannersChange?: (banners: string[]) => void;
+  onLogoChange?: (logo: string) => void;
 }
 
 export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = ({ 
   items, 
-  banners, 
+  banners,
+  logo,
   onSave, 
   onLogout, 
-  onBannersChange 
+  onBannersChange,
+  onLogoChange
 }) => {
   const [localItems, setLocalItems] = useState<MenuItem[]>(() => [...items]);
   const [localBanners, setLocalBanners] = useState<string[]>(() => [...banners]);
+  const [localLogo, setLocalLogo] = useState<string>(logo);
   
   const [newItem, setNewItem] = useState({
     name: "",
@@ -53,7 +57,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
   });
   const [newItemImageUploaded, setNewItemImageUploaded] = useState(false);
 
-  // Direct item image upload
   const handleItemImageUpload = async (itemId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -64,12 +67,11 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       );
       toast.success("Item image uploaded successfully!");
     } catch (error) {
-      // Alert already shown
+      // Handled
     }
     e.target.value = "";
   };
 
-  // Direct banner image upload
   const handleBannerUpload = async (slideIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -84,12 +86,27 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
       }
       toast.success(`Slide ${slideIndex + 1} banner uploaded successfully!`);
     } catch (error) {
-      // Alert already shown
+      // Handled
     }
     e.target.value = "";
   };
 
-  // New item image upload
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await directImgBBUpload(file);
+      setLocalLogo(url);
+      if (onLogoChange) {
+        onLogoChange(url);
+      }
+      toast.success("Restaurant Logo updated successfully!");
+    } catch (error) {
+      // Handled
+    }
+    e.target.value = "";
+  };
+
   const handleNewItemImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -104,7 +121,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     e.target.value = "";
   };
 
-  // Add new item handler
   const handleAddNewItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.name || !newItem.price) {
@@ -160,6 +176,32 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
               <LogOut className="w-4 h-4" />
               Log Out
             </button>
+          </div>
+        </div>
+
+        {/* Restaurant Logo Settings & Customization */}
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 space-y-6">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-red-600/10 rounded-lg text-red-600">
+              <Upload className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Manage Restaurant Logo</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-6 bg-zinc-950 p-4 border border-zinc-800 rounded-xl">
+            <div className="w-20 h-20 bg-zinc-900 rounded-xl overflow-hidden shrink-0 border border-zinc-800 flex items-center justify-center">
+              <img 
+                src={localLogo || "/logo.jpg"} 
+                alt="Restaurant Logo" 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = "/logo.jpg";
+                }}
+              />
+            </div>
+            <div className="space-y-2 flex-1 w-full">
+              <label className="text-sm font-bold text-zinc-300 block">Upload New Logo (imgBB)</label>
+              <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg p-1.5" />
+            </div>
           </div>
         </div>
 
@@ -285,7 +327,6 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL</span>
                     <input type="text" value={item.image} onChange={(e) => handleImageChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
                   </div>
-                  {/* File input for item image */}
                   <div className="space-y-1 sm:col-span-2">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Upload New Image</span>
                     <input type="file" accept="image/*" onChange={(e) => handleItemImageUpload(item.id, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-lg p-2" />

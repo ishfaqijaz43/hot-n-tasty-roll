@@ -1,13 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { MenuItem } from "@/data/hotNTastyMenu";
 
-// Hardcoded live project credentials to ensure instant database connection across all networks
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://naisjutqwbsslfohpois.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5haXNqdXRxd2Jzc2xmb2hwb2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NzgzNTMsImV4cCI6MjA5OTE1NDM1M30.wGRUI7FO82QnogtwN5AmKuiJrhmGnI0PwN455k-vfqY";
+const SUPABASE_URL = "https://naisjutqwbsslfohpois.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5haXNqdXRxd2Jzc2xmb2hwb2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NzgzNTMsImV4cCI6MjA5OTE1NDM1M30.wGRUI7FO82QnogtwN5AmKuiJrhmGnI0PwN455k-vfqY";
 
-export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-
-// Create the live client immediately
+export const isSupabaseConfigured = true;
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
@@ -23,7 +20,7 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
     if (error) throw error;
     return data as MenuItem[];
   } catch (err) {
-    console.warn("Supabase fetch menu failed, using local fallback", err);
+    console.warn("Supabase fetch menu failed", err);
     return null;
   }
 }
@@ -33,7 +30,6 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
   try {
-    // Delete existing to synchronize completely
     const { error: deleteError } = await supabase
       .from("hot_n_tasty_menu")
       .delete()
@@ -41,7 +37,6 @@ export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
 
     if (deleteError) throw deleteError;
 
-    // Prepare items for insertion
     const toInsert = items.map(item => ({
       id: item.id,
       name: item.name,
@@ -76,7 +71,7 @@ export async function getSupabaseBanners(): Promise<string[] | null> {
     if (error) throw error;
     return data.map((b) => b.url);
   } catch (err) {
-    console.warn("Supabase fetch banners failed, using local fallback", err);
+    console.warn("Supabase fetch banners failed", err);
     return null;
   }
 }
@@ -86,7 +81,6 @@ export async function getSupabaseBanners(): Promise<string[] | null> {
  */
 export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
   try {
-    // Clear existing banners
     const { error: deleteError } = await supabase
       .from("hot_n_tasty_banners")
       .delete()
@@ -94,7 +88,6 @@ export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
 
     if (deleteError) throw deleteError;
 
-    // Prepare items for insertion
     const toInsert = urls.map((url, index) => ({
       url,
       order_index: index
@@ -108,6 +101,42 @@ export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
     return true;
   } catch (err) {
     console.error("Supabase save banners failed", err);
+    return false;
+  }
+}
+
+/**
+ * Fetch customized restaurant logo from Supabase settings
+ */
+export async function getSupabaseLogo(): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from("hot_n_tasty_settings")
+      .select("value")
+      .eq("key", "logo")
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.value || null;
+  } catch (err) {
+    console.warn("Supabase fetch logo failed", err);
+    return null;
+  }
+}
+
+/**
+ * Save customized restaurant logo to Supabase settings
+ */
+export async function saveSupabaseLogo(url: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("hot_n_tasty_settings")
+      .upsert({ key: "logo", value: url });
+
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error("Supabase save logo failed", err);
     return false;
   }
 }
