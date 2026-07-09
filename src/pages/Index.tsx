@@ -228,19 +228,14 @@ const Index = () => {
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Saving changes to live cloud database...");
       try {
-        const success = await saveSupabaseMenu(updatedItems);
+        await saveSupabaseMenu(updatedItems);
         toast.dismiss(syncLoader);
-        
-        if (success) {
-          toast.success("Menu synchronized globally to all customers!");
-        } else {
-          console.error("Supabase Save Return Mismatch: saveSupabaseMenu returned false.");
-          toast.error("Failed to connect to Supabase. Saved to browser locally.");
-        }
-      } catch (err) {
+        toast.success("Menu synchronized globally to all customers!");
+      } catch (err: any) {
         toast.dismiss(syncLoader);
         console.error("Supabase live save operation crash details:", err);
-        toast.error("Failed to connect to Supabase. Saved to browser locally.");
+        const errMsg = err?.message || err?.details || JSON.stringify(err);
+        toast.error(`Supabase Sync Error: ${errMsg}`, { duration: 15000 });
       }
     } else {
       toast.success("Menu changes saved locally!");
@@ -259,19 +254,14 @@ const Index = () => {
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live cloud banners...");
       try {
-        const success = await saveSupabaseBanners(newBanners);
+        await saveSupabaseBanners(newBanners);
         toast.dismiss(syncLoader);
-
-        if (success) {
-          toast.success("New slide banners are now live globally!");
-        } else {
-          console.error("Supabase Banners Save Mismatch: saveSupabaseBanners returned false.");
-          toast.error("Banner upload sync error.");
-        }
-      } catch (err) {
+        toast.success("New slide banners are now live globally!");
+      } catch (err: any) {
         toast.dismiss(syncLoader);
         console.error("Supabase live banners save operation crash details:", err);
-        toast.error("Banner upload sync error.");
+        const errMsg = err?.message || err?.details || JSON.stringify(err);
+        toast.error(`Supabase Banner Sync Error: ${errMsg}`, { duration: 15000 });
       }
     }
   };
@@ -283,19 +273,14 @@ const Index = () => {
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live restaurant logo...");
       try {
-        const success = await saveSupabaseLogo(newLogo);
+        await saveSupabaseLogo(newLogo);
         toast.dismiss(syncLoader);
-
-        if (success) {
-          toast.success("Logo updated globally!");
-        } else {
-          console.error("Supabase Logo Save Mismatch: saveSupabaseLogo returned false.");
-          toast.error("Logo update sync error.");
-        }
-      } catch (err) {
+        toast.success("Logo updated globally!");
+      } catch (err: any) {
         toast.dismiss(syncLoader);
         console.error("Supabase live logo save operation crash details:", err);
-        toast.error("Logo update sync error.");
+        const errMsg = err?.message || err?.details || JSON.stringify(err);
+        toast.error(`Supabase Logo Sync Error: ${errMsg}`, { duration: 15000 });
       }
     }
   };

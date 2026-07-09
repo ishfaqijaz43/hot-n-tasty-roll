@@ -54,7 +54,7 @@ export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
     return true;
   } catch (err) {
     console.error("Supabase menu updates synchronization failed. Error stack:", err);
-    return false;
+    throw err; // Rethrow to propagate to UI diagnostic module
   }
 }
 
@@ -112,7 +112,7 @@ export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
     throw new Error(errImgUrl.message || "All fallback insert attempts failed.");
   } catch (err) {
     console.error("Supabase save banner sliders failed. Error stack:", err);
-    return false;
+    throw err; // Rethrow to propagate to UI diagnostic module
   }
 }
 
@@ -148,6 +148,6 @@ export async function saveSupabaseLogo(url: string): Promise<boolean> {
     return true;
   } catch (err) {
     console.error("Supabase save settings key (logo) failed. Error stack:", err);
-    return false;
+    throw err; // Rethrow to propagate to UI diagnostic module
   }
 }
