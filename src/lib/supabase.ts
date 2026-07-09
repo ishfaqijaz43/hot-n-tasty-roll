@@ -1,21 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { MenuItem } from "@/data/hotNTastyMenu";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// Hardcoded live project credentials to ensure instant database connection across all networks
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://naisjutqwbsslfohpois.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5haXNqdXRxd2Jzc2xmb2hwb2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NzgzNTMsImV4cCI6MjA5OTE1NDM1M30.wGRUI7FO82QnogtwN5AmKuiJrhmGnI0PwN455k-vfqY";
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-// Safely construct client if credentials exist to prevent crashing on missing env variables
-export const supabase = isSupabaseConfigured
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+// Create the live client immediately
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
  * Fetch all live menu items from Supabase
  */
 export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from("hot_n_tasty_menu")
@@ -34,7 +32,6 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
  * Upsert menu items list to live Supabase database
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
-  if (!supabase) return false;
   try {
     // Delete existing to synchronize completely
     const { error: deleteError } = await supabase
@@ -70,7 +67,6 @@ export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
  * Fetch homepage banner URLs from Supabase
  */
 export async function getSupabaseBanners(): Promise<string[] | null> {
-  if (!supabase) return null;
   try {
     const { data, error } = await supabase
       .from("hot_n_tasty_banners")
@@ -89,7 +85,6 @@ export async function getSupabaseBanners(): Promise<string[] | null> {
  * Replace and synchronize banner URLs in Supabase
  */
 export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
-  if (!supabase) return false;
   try {
     // Clear existing banners
     const { error: deleteError } = await supabase
