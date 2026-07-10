@@ -8,8 +8,7 @@ export const isSupabaseConfigured = true;
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
- * Fetch all live menu items from Supabase with full error stacktrace output.
- * Converts numeric database bigint IDs cleanly to string format for client compatibility.
+ * Fetch all live menu items from Supabase with full error stacktrace output
  */
 export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
   try {
@@ -19,16 +18,7 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    if (!data) return null;
-
-    return data.map((row: any) => ({
-      id: String(row.id),
-      name: row.name,
-      price: Number(row.price),
-      description: row.description,
-      category: row.category,
-      image: row.image
-    })) as MenuItem[];
+    return data as MenuItem[];
   } catch (err) {
     console.error("Supabase menu retrieval failed. Error stack:", err);
     return null;
@@ -36,21 +26,19 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
 }
 
 /**
- * Upsert menu items list to live Supabase database with full error stacktrace output.
- * Omits the 'id' field entirely on insert so the DB generates its auto-incrementing bigint natively.
+ * Upsert menu items list to live Supabase database with full error stacktrace output
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
   try {
-    // Clear all existing menu items safely using numeric filters compatible with bigint column definitions
     const { error: deleteError } = await supabase
       .from("hot_n_tasty_menu")
       .delete()
-      .neq("id", -999999);
+      .neq("id", "placeholder-to-allow-all-delete");
 
     if (deleteError) throw deleteError;
 
-    // Map payload omitting custom string IDs so auto-increment bigint is cleanly handled by Supabase
     const toInsert = items.map(item => ({
+      id: item.id,
       name: item.name,
       price: item.price,
       description: item.description,
@@ -93,11 +81,11 @@ export async function getSupabaseBanners(): Promise<string[] | null> {
  */
 export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
   try {
-    // Delete existing entries cleanly without trigger restrictions using numeric parameters
+    // Delete existing entries cleanly without trigger restrictions
     await supabase
       .from("hot_n_tasty_banners")
       .delete()
-      .neq("order_index", -999999);
+      .neq("order_index", -999);
 
     // Try storing payload matching the 'url' schema
     const toInsertUrl = urls.map((url, index) => ({
