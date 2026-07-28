@@ -23,7 +23,6 @@ import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/d
 import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
 import { LoginModal } from "@/components/LoginModal";
 import { HotNTastyAdminDashboard } from "@/components/HotNTastyAdminDashboard";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner";
 import Carousel from "@/components/Carousel";
 import SliderControls from "@/components/SliderControls";
@@ -492,7 +491,6 @@ const Index = () => {
                 key={category.id}
                 onClick={() => {
                   setSelectedCategory(category.id);
-                  // Fixed scroll behavior to scroll smoothly directly down into the actual filtered items grid
                   setTimeout(() => scrollToSection("menu-items-grid"), 50);
                 }}
                 className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-1.5 shadow-sm border ${
@@ -506,7 +504,6 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Sub-container target anchor with correct sticky header scroll-margin-top offset */}
           <div id="menu-items-grid" className="scroll-mt-28">
             {filteredItems.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 p-8 max-w-md mx-auto">
@@ -877,10 +874,19 @@ const Index = () => {
           </div>
 
           <div className="border-t border-zinc-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-500 text-xs">
-            <p>© 2026 Hot N Tasty Roll BBQ Gulistan-e-johar. All Rights Reserved. | Developed by ByteCraft Solutions</p>
-            <p>Designed for Karachi's ultimate food lovers.</p>
+            <p>© 2026 Hot N Tasty Roll BBQ Gulistan-e-johar. All Rights Reserved.</p>
+            <p>
+              Developed by{" "}
+              <a
+                href="https://byte-craft-solutions.bytecraft05.workers.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-zinc-700 hover:text-red-600 transition-colors underline"
+              >
+                ByteCraft Solutions
+              </a>
+            </p>
           </div>
-          <MadeWithDyad />
         </div>
       </footer>
 
