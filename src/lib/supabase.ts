@@ -30,10 +30,11 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
   try {
+    // Delete all existing entries (no condition needed for full table clear)
     const { error: deleteError } = await supabase
       .from("hot_n_tasty_menu")
       .delete()
-      .neq("id", "placeholder-to-allow-all-delete");
+      .gt("id", 0); // Match all rows with positive IDs (universal filter)
 
     if (deleteError) throw deleteError;
 
