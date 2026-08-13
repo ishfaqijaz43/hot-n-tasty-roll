@@ -148,6 +148,14 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
     setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, price: numericValue } : item)));
   };
 
+  const handleNameChange = (id: string, value: string) => {
+    setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, name: value } : item)));
+  };
+
+  const handleDescriptionChange = (id: string, value: string) => {
+    setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, description: value } : item)));
+  };
+
   const handleImageChange = (id: string, value: string) => {
     setLocalItems((prev) => prev.map((item) => (item.id === id ? { ...item, image: value } : item)));
   };
@@ -311,7 +319,7 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
             {localItems.map((item) => (
               <div key={item.id} className="bg-zinc-900/30 border border-zinc-800/60 rounded-xl p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 hover:border-zinc-700 transition-colors">
                 {/* Left: Item Info */}
-                <div className="flex items-center gap-4 w-full lg:w-1/3">
+                <div className="flex items-center gap-4 w-full lg:w-1/4 shrink-0">
                   <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg bg-zinc-800 shrink-0" />
                   <div className="min-w-0">
                     <h4 className="font-bold text-white text-sm truncate">{item.name}</h4>
@@ -319,19 +327,27 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
                     <p className="text-xs text-zinc-400 line-clamp-1 mt-1">{item.description}</p>
                   </div>
                 </div>
-                {/* Middle: Inputs + Visible Upload */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-1/2">
+                {/* Middle: Inputs for Editing Name, Price, Description, Image */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:flex-1">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Item Name</span>
+                    <input type="text" value={item.name} onChange={(e) => handleNameChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
+                  </div>
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Price (Rs)</span>
                     <input type="number" value={item.price} onChange={(e) => handlePriceChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Description</span>
+                    <input type="text" value={item.description} onChange={(e) => handleDescriptionChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Image URL</span>
                     <input type="text" value={item.image} onChange={(e) => handleImageChange(item.id, e.target.value)} className="w-full px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-red-600" />
                   </div>
-                  <div className="space-y-1 sm:col-span-2">
+                  <div className="space-y-1">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Upload New Image</span>
-                    <input type="file" accept="image/*" onChange={(e) => handleItemImageUpload(item.id, e)} className="block w-full text-sm text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-lg p-2" />
+                    <input type="file" accept="image/*" onChange={(e) => handleItemImageUpload(item.id, e)} className="block w-full text-xs text-zinc-300 bg-zinc-950 border border-zinc-800 rounded-lg p-1.5" />
                   </div>
                 </div>
                 {/* Right: Actions */}

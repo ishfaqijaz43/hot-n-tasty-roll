@@ -30,28 +30,35 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
  */
 export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
   try {
-    // Delete all existing entries (no condition needed for full table clear)
-    const { error: deleteError } = await supabase
-      .from("hot_n_tasty_menu")
-      .delete()
-      .gt("id", 0); // Match all rows with positive IDs (universal filter)
-
-    if (deleteError) throw deleteError;
-
+    // Upsert menu items list using primary key 'id'
     const toInsert = items.map(item => ({
       id: item.id,
       name: item.name,
-      price: item.price,
-      description: item.description,
-      category: item.category,
-      image: item.image
+      price: Number(item.price) || 0,
+      description: item.description || "",
+      category: item.category || "burgers",
+      image: item.image || ""
     }));
 
-    const { error: insertError } = await supabase
+    const { error: upsertError } = await supabase
       .from("hot_n_tasty_menu")
-      .insert(toInsert);
+      .upsert(toInsert, { onConflict: "id" });
 
-    if (insertError) throw insertError;
+    if (upsertError) {
+      console.warn("Supabase upsert warning, attempting delete & insert fallback:", upsertError);
+      // Fallback: Delete all and re-insert
+      await supabase
+        .from("hot_n_tasty_menu")
+        .delete()
+        .neq("id", "___never_matches_000___");
+
+      const { error: insertError } = await supabase
+        .from("hot_n_tasty_menu")
+        .insert(toInsert);
+
+      if (insertError) throw insertError;
+    }
+
     return true;
   } catch (err) {
     console.error("Supabase menu updates synchronization failed. Error stack:", err);

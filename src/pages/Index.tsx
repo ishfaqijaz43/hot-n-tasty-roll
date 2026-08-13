@@ -17,7 +17,8 @@ import {
   ThumbsUp,
   ShieldCheck,
   Lock,
-  ArrowRight
+  ArrowRight,
+  ArrowUp
 } from "lucide-react";
 import { defaultHotNTastyMenuItems, HOT_N_TASTY_CATEGORIES, MenuItem } from "@/data/hotNTastyMenu";
 import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
@@ -68,11 +69,13 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
+  const [showFloatingButtons, setShowFloatingButtons] = useState(false);
   
   const [logoHasError, setLogoHasError] = useState(false);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -83,6 +86,19 @@ const Index = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, [bannerImages]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowFloatingButtons(true);
+      } else {
+        setShowFloatingButtons(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     setBannerImages((prev) => {
@@ -139,6 +155,44 @@ const Index = () => {
       return matchesCategory && matchesSearch;
     });
   }, [menuList, selectedCategory, searchQuery]);
+
+  // Group items by category for "All categories" view
+  const groupedItems = useMemo(() => {
+    if (selectedCategory.toLowerCase() !== "all") {
+      return null;
+    }
+
+    const groups: { categoryId: string; categoryName: string; items: MenuItem[] }[] = [];
+    
+    HOT_N_TASTY_CATEGORIES.forEach((cat) => {
+      if (cat.id === "all") return;
+      const catItems = filteredItems.filter(
+        (item) => item.category.toLowerCase() === cat.id.toLowerCase()
+      );
+      if (catItems.length > 0) {
+        const cleanName = cat.name.replace(/[^a-zA-Z0-9& ]/g, "").trim().toUpperCase();
+        groups.push({
+          categoryId: cat.id,
+          categoryName: cleanName || cat.name.toUpperCase(),
+          items: catItems,
+        });
+      }
+    });
+
+    const knownCatIds = new Set(HOT_N_TASTY_CATEGORIES.map((c) => c.id.toLowerCase()));
+    const otherItems = filteredItems.filter(
+      (item) => !knownCatIds.has(item.category.toLowerCase())
+    );
+    if (otherItems.length > 0) {
+      groups.push({
+        categoryId: "other",
+        categoryName: "OTHER SPECIALS",
+        items: otherItems,
+      });
+    }
+
+    return groups;
+  }, [filteredItems, selectedCategory]);
 
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -220,6 +274,24 @@ const Index = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleFloatingSearchClick = () => {
+    setIsSearchExpanded(true);
+    const searchContainer = searchContainerRef.current;
+    if (searchContainer) {
+      searchContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 350);
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleSaveMenu = async (updatedItems: MenuItem[]) => {
     setMenuList(updatedItems);
     localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
@@ -287,6 +359,81 @@ const Index = () => {
   const getItemQuantityInCart = (itemId: string) => {
     const found = cartItems.find((i) => i.item.id === itemId);
     return found ? found.quantity : 0;
+  };
+
+  const renderMenuItemCard = (item: MenuItem) => {
+    const qtyInCart = getItemQuantityInCart(item.id);
+    return (
+      <div
+        key={item.id}
+        className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
+      >
+        <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
+            }}
+          />
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-red-600 shadow-sm border border-zinc-200/50">
+            Rs. {item.price}
+          </div>
+          <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
+            {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
+          </span>
+        </div>
+
+        <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
+              {item.name}
+            </h3>
+            <p className="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">
+              {item.description}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
+            <span className="text-red-600 font-black text-lg">
+              Rs. {item.price}
+            </span>
+
+            {qtyInCart > 0 ? (
+              <div className="flex items-center bg-red-600 text-white rounded-xl p-1 shadow-md shadow-red-600/10">
+                <button
+                  onClick={() => handleUpdateQuantity(item.id, -1)}
+                  className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                  title="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="px-3 text-xs font-black text-white">
+                  {qtyInCart}
+                </span>
+                <button
+                  onClick={() => handleUpdateQuantity(item.id, 1)}
+                  className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
+                  title="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => handleAddToCart(item)}
+                className="px-4 py-2 bg-zinc-900 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:shadow-lg active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add to Cart
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (isAdminMode) {
@@ -369,6 +516,7 @@ const Index = () => {
                 isSearchExpanded ? "w-28 xs:w-36 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
               }`}>
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
@@ -522,82 +670,28 @@ const Index = () => {
                   Reset Filters
                 </button>
               </div>
+            ) : selectedCategory.toLowerCase() === "all" && groupedItems ? (
+              <div className="space-y-12">
+                {groupedItems.map((group) => (
+                  <div key={group.categoryId} className="space-y-6">
+                    <div className="flex items-center gap-3 border-b-2 border-red-600/20 pb-3">
+                      <div className="w-2.5 h-8 bg-red-600 rounded-full shrink-0" />
+                      <h3 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 uppercase">
+                        {group.categoryName}
+                      </h3>
+                      <span className="text-xs bg-red-50 text-red-600 font-extrabold px-3 py-1 rounded-full border border-red-100/80 ml-auto">
+                        {group.items.length} {group.items.length === 1 ? "item" : "items"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                      {group.items.map((item) => renderMenuItemCard(item))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {filteredItems.map((item) => {
-                  const qtyInCart = getItemQuantityInCart(item.id);
-                  return (
-                    <div
-                      key={item.id}
-                      className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group hover:border-red-500/30"
-                    >
-                      <div className="relative aspect-[4/3] bg-zinc-100 overflow-hidden shrink-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80";
-                          }}
-                        />
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-red-600 shadow-sm border border-zinc-200/50">
-                          Rs. {item.price}
-                        </div>
-                        <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
-                          {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
-                        </span>
-                      </div>
-
-                      <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                        <div className="space-y-1">
-                          <h3 className="font-bold text-zinc-900 text-base sm:text-lg group-hover:text-red-600 transition-colors line-clamp-1">
-                            {item.name}
-                          </h3>
-                          <p className="text-zinc-500 text-xs sm:text-sm line-clamp-2 leading-relaxed">
-                            {item.description}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 mt-auto">
-                          <span className="text-red-600 font-black text-lg">
-                            Rs. {item.price}
-                          </span>
-
-                          {qtyInCart > 0 ? (
-                            <div className="flex items-center bg-red-600 text-white rounded-xl p-1 shadow-md shadow-red-600/10">
-                              <button
-                                onClick={() => handleUpdateQuantity(item.id, -1)}
-                                className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
-                                title="Decrease quantity"
-                              >
-                                <Minus className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="px-3 text-xs font-black text-white">
-                                {qtyInCart}
-                              </span>
-                              <button
-                                onClick={() => handleUpdateQuantity(item.id, 1)}
-                                className="p-1.5 hover:bg-red-700 rounded-lg transition-colors text-white"
-                                title="Increase quantity"
-                              >
-                                <Plus className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleAddToCart(item)}
-                              className="px-4 py-2 bg-zinc-900 hover:bg-red-600 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:shadow-lg active:scale-95"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              Add to Cart
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {filteredItems.map((item) => renderMenuItemCard(item))}
               </div>
             )}
           </div>
@@ -889,6 +983,42 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Floating Action Buttons */}
+      <div className={`fixed inset-x-0 pointer-events-none z-40 transition-all duration-300 ${
+        showCartNotification && cartItems.length > 0 && !isCartOpen ? "bottom-24" : "bottom-6"
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center w-full">
+          {/* Bottom-left: Search button */}
+          <button
+            onClick={handleFloatingSearchClick}
+            className={`pointer-events-auto p-3.5 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-2xl border border-red-500/30 flex items-center gap-2 group transition-all duration-300 ${
+              showFloatingButtons
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-8 scale-90 pointer-events-none"
+            }`}
+            title="Search Menu"
+            aria-label="Search Menu"
+          >
+            <Search className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-black hidden sm:inline pr-1">Search</span>
+          </button>
+
+          {/* Bottom-right: Up Arrow button */}
+          <button
+            onClick={handleScrollToTop}
+            className={`pointer-events-auto p-3.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-full shadow-2xl border border-zinc-700/80 flex items-center justify-center group transition-all duration-300 ${
+              showFloatingButtons
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-8 scale-90 pointer-events-none"
+            }`}
+            title="Scroll to Top"
+            aria-label="Scroll to Top"
+          >
+            <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
+        </div>
+      </div>
 
       <HotNTastyCartDrawer
         isOpen={isCartOpen}
