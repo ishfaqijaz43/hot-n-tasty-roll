@@ -148,11 +148,37 @@ export async function getSupabaseLogo(): Promise<string | null> {
  */
 export async function saveSupabaseLogo(url: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    // Upsert using the unique "key" column to avoid duplicate key constraint violations
+    const { error: upsertError } = await supabase
       .from("hot_n_tasty_settings")
-      .upsert({ key: "logo", value: url });
+      .upsert({ key: "logo", value: url }, { onConflict: "key" });
 
-    if (error) throw error;
+    if (!upsertError) return true;
+
+    console.warn("Supabase upsert on key failed, attempting update/insert fallback:", upsertError);
+
+    // Fallback: Check if the "logo" row already exists and update it, or insert if not present
+    const { data: existing } = await supabase
+      .from("hot_n_tasty_settings")
+      .select("key")
+      .eq("key", "logo")
+      .maybeSingle();
+
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from("hot_n_tasty_settings")
+        .update({ value: url })
+        .eq("key", "logo");
+
+      if (updateError) throw updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from("hot_n_tasty_settings")
+        .insert({ key: "logo", value: url });
+
+      if (insertError) throw insertError;
+    }
+
     return true;
   } catch (err) {
     console.error("Supabase save settings key (logo) failed. Error stack:", err);
