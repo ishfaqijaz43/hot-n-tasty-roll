@@ -274,27 +274,6 @@ const Index = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setTimeout(() => {
-      if (categoryId.toLowerCase() === "all") {
-        const menuGrid = document.getElementById("menu-items-grid");
-        if (menuGrid) {
-          const yOffset = -140;
-          const y = menuGrid.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      } else {
-        const targetElement = document.getElementById(`category-section-${categoryId}`) || document.getElementById("menu-items-grid");
-        if (targetElement) {
-          const yOffset = -140;
-          const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      }
-    }, 50);
-  };
-
   const handleFloatingSearchClick = () => {
     setIsSearchExpanded(true);
     const searchContainer = searchContainerRef.current;
