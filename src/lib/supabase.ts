@@ -69,21 +69,34 @@ export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
 /**
  * Fetch homepage banner URLs from Supabase (supporting both 'url' and 'image_url' schemas dynamically) with error logs
  */
-export async function getSupabaseBanners(): Promise<string[] | null> {
+/**
+ * Save customized restaurant logo to Supabase settings
+ */
+export async function saveSupabaseLogo(url: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from("hot_n_tasty_banners")
-      .select("*")
-      .order("order_index", { ascending: true });
+    const { error } = await supabase
+      .from("hot_n_tasty_settings")
+      .upsert(
+        {
+          key: "logo",
+          value: url
+        },
+        {
+          onConflict: "key"
+        }
+      );
 
-    if (error) throw error;
-    return data.map((b: any) => b.url || b.image_url || b.image);
+    if (error) {
+      console.error("Supabase logo update failed:", error);
+      throw error;
+    }
+
+    return true;
   } catch (err) {
-    console.error("Supabase fetch banner sliders failed. Error stack:", err);
-    return null;
+    console.error("Supabase save settings key (logo) failed:", err);
+    throw err;
   }
 }
-
 /**
  * Replace and synchronize banner URLs in Supabase, dynamically validating schema to bypass sync mismatches
  */
@@ -142,46 +155,21 @@ export async function getSupabaseLogo(): Promise<string | null> {
     return null;
   }
 }
-
 /**
- * Save customized restaurant logo to Supabase settings
+ * Fetch homepage banner URLs from Supabase
  */
-export async function saveSupabaseLogo(url: string): Promise<boolean> {
+export async function getSupabaseBanners(): Promise<string[] | null> {
   try {
-    // Upsert using the unique "key" column to avoid duplicate key constraint violations
-    const { error: upsertError } = await supabase
-      .from("hot_n_tasty_settings")
-      .upsert({ key: "logo", value: url }, { onConflict: "key" });
+    const { data, error } = await supabase
+      .from("hot_n_tasty_banners")
+      .select("*")
+      .order("order_index", { ascending: true });
 
-    if (!upsertError) return true;
+    if (error) throw error;
 
-    console.warn("Supabase upsert on key failed, attempting update/insert fallback:", upsertError);
-
-    // Fallback: Check if the "logo" row already exists and update it, or insert if not present
-    const { data: existing } = await supabase
-      .from("hot_n_tasty_settings")
-      .select("key")
-      .eq("key", "logo")
-      .maybeSingle();
-
-    if (existing) {
-      const { error: updateError } = await supabase
-        .from("hot_n_tasty_settings")
-        .update({ value: url })
-        .eq("key", "logo");
-
-      if (updateError) throw updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from("hot_n_tasty_settings")
-        .insert({ key: "logo", value: url });
-
-      if (insertError) throw insertError;
-    }
-
-    return true;
+    return data.map((b: any) => b.url || b.image_url || b.image);
   } catch (err) {
-    console.error("Supabase save settings key (logo) failed. Error stack:", err);
-    throw err; // Rethrow to propagate to UI diagnostic module
+    console.error("Supabase fetch banner sliders failed:", err);
+    return null;
   }
 }
