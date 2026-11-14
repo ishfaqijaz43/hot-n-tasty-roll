@@ -14,8 +14,7 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
   try {
     const { data, error } = await supabase
       .from("hot_n_tasty_menu")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("*");
 
     if (error) throw error;
     return data as MenuItem[];
@@ -28,42 +27,69 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
 /**
  * Upsert menu items list to live Supabase database with full error stacktrace output
  */
-export async function saveSupabaseMenu(items: MenuItem[]): Promise<boolean> {
+export async function saveSupabaseMenu(items: MenuItem[], removedIds: string[] = []): Promise<boolean> {
   try {
-    // Upsert menu items list using primary key 'id'
-    const toInsert = items.map(item => ({
+    // Preserve all existing records; only delete IDs explicitly removed in admin.
+    // Never use a table-wide delete or destructive delete-and-reinsert fallback.
+    const toUpsert = items.map(item => ({
       id: item.id,
       name: item.name,
       price: Number(item.price) || 0,
       description: item.description || "",
-      category: item.category || "burgers",
+      category: item.category || "chicken-rolls",
       image: item.image || ""
     }));
 
-    const { error: upsertError } = await supabase
-      .from("hot_n_tasty_menu")
-      .upsert(toInsert, { onConflict: "id" });
-
-    if (upsertError) {
-      console.warn("Supabase upsert warning, attempting delete & insert fallback:", upsertError);
-      // Fallback: Delete all and re-insert
-      await supabase
+    if (toUpsert.length > 0) {
+      const { error } = await supabase
         .from("hot_n_tasty_menu")
-        .delete()
-        .neq("id", "___never_matches_000___");
-
-      const { error: insertError } = await supabase
-        .from("hot_n_tasty_menu")
-        .insert(toInsert);
-
-      if (insertError) throw insertError;
+        .upsert(toUpsert, { onConflict: "id" });
+      if (error) throw error;
     }
 
+    // Delete in small explicit batches; a failed delete must surface as an error.
+    for (let i = 0; i < removedIds.length; i += 100) {
+      const batch = removedIds.slice(i, i + 100);
+      const { data, error } = await supabase
+        .from("hot_n_tasty_menu")
+        .delete()
+        .in("id", batch)
+        .select("id");
+      if (error) throw error;
+      if ((data?.length ?? 0) !== batch.length) {
+        throw new Error("Some deleted items were not removed from Supabase. Check database permissions.");
+      }
+    }
     return true;
   } catch (err) {
-    console.error("Supabase menu updates synchronization failed. Error stack:", err);
-    throw err; // Rethrow to propagate to UI diagnostic module
+    console.error("Supabase menu synchronization failed:", err);
+    throw err;
   }
+}
+
+/** Exclusive deals use an existing settings key and the existing menu table. */
+export const DEFAULT_EXCLUSIVE_TITLE = "Exclusive Deals";
+
+export async function getSupabaseExclusiveTitle(): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from("hot_n_tasty_settings")
+      .select("value")
+      .eq("key", "exclusive_deals_title")
+      .maybeSingle();
+    if (error) throw error;
+    return typeof data?.value === "string" && data.value.trim() ? data.value : null;
+  } catch (err) {
+    console.error("Could not load exclusive deals title:", err);
+    return null;
+  }
+}
+
+export async function saveSupabaseExclusiveTitle(title: string): Promise<void> {
+  const { error } = await supabase
+    .from("hot_n_tasty_settings")
+    .upsert({ key: "exclusive_deals_title", value: title }, { onConflict: "key" });
+  if (error) throw error;
 }
 
 /**
@@ -129,7 +155,7 @@ export async function saveSupabaseBanners(urls: string[]): Promise<boolean> {
       .insert(toInsertImageUrl);
 
     if (!errImgUrl) return true;
-    
+
     throw new Error(errImgUrl.message || "All fallback insert attempts failed.");
   } catch (err) {
     console.error("Supabase save banner sliders failed. Error stack:", err);
