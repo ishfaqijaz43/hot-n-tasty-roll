@@ -1,10 +1,7 @@
 import type { MenuItem } from "@/data/hotNTastyMenu";
 
-/**
- * Exclusive promotions use the existing deals-festival database category.
- * The ID prefix distinguishes them from regular festival deals, avoiding any
- * need for a new category value, table, or database migration.
- */
+/** Exclusive promotions share the existing menu table/category but have unique IDs. */
 export function isExclusiveDeal(item: Pick<MenuItem, "id" | "category">): boolean {
-  return item.id.startsWith("exclusive-") || item.category === "exclusive-deals";
+  return (typeof item?.id === "string" && item.id.startsWith("exclusive-"))
+    || item?.category === "exclusive-deals";
 }

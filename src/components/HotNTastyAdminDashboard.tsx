@@ -206,6 +206,8 @@ export const HotNTastyAdminDashboard: React.FC<HotNTastyAdminDashboardProps> = (
   };
 
   const handleDeleteItem = (id: string) => {
+    const itemName = localItems.find((item) => item.id === id)?.name || "this item";
+    if (!window.confirm(`Remove ${itemName}? It will be deleted from the menu when you save.`)) return;
     setLocalItems((prev) => prev.filter((item) => item.id !== id));
     toast.info("Item removed from the list. Save Changes to publish deletion.");
   };

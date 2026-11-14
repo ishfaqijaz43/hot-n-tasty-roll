@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { MenuItem } from "@/data/hotNTastyMenu";
+import type { MenuItem } from "@/data/hotNTastyMenu";
+import { normalizeMenuItems } from "@/utils/menuSorting";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://naisjutqwbsslfohpois.supabase.co";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5haXNqdXRxd2Jzc2xmb2hwb2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NzgzNTMsImV4cCI6MjA5OTE1NDM1M30.wGRUI7FO82QnogtwN5AmKuiJrhmGnI0PwN455k-vfqY";
@@ -17,7 +18,7 @@ export async function getSupabaseMenu(): Promise<MenuItem[] | null> {
       .select("*");
 
     if (error) throw error;
-    return data as MenuItem[];
+    return normalizeMenuItems(data);
   } catch (err) {
     console.error("Supabase menu retrieval failed. Error stack:", err);
     return null;

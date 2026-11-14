@@ -25,7 +25,7 @@ import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
 import { LoginModal } from "@/components/LoginModal";
 import { HotNTastyAdminDashboard } from "@/components/HotNTastyAdminDashboard";
 import { toast } from "sonner";
-import { sortMenuItems } from "@/utils/menuSorting";
+import { normalizeMenuItems, sortMenuItems } from "@/utils/menuSorting";
 import { isExclusiveDeal } from "@/utils/exclusiveDeals";
 import Carousel from "@/components/Carousel";
 import SliderControls from "@/components/SliderControls";
@@ -47,28 +47,57 @@ interface CartItem {
   quantity: number;
 }
 
+/** Invalid / outdated browser storage must never crash React at startup. */
+function cachedJSON(key: string): unknown {
+  try {
+    const cached = localStorage.getItem(key);
+    return cached ? JSON.parse(cached) : null;
+  } catch (error) {
+    console.warn(`Ignoring invalid stored ${key}:`, error);
+    return null;
+  }
+}
+
+function cachedText(key: string, fallback: string): string {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveCache(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.warn(`Unable to cache ${key}:`, error);
+  }
+}
+
 const Index = () => {
   const [menuList, setMenuList] = useState<MenuItem[]>(() => {
-    const saved = localStorage.getItem("hot_n_tasty_menu");
-    return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
+    const stored = normalizeMenuItems(cachedJSON("hot_n_tasty_menu"));
+    return stored.length > 0 ? stored : defaultHotNTastyMenuItems;
   });
 
   const [exclusiveTitle, setExclusiveTitle] = useState<string>(() =>
-    localStorage.getItem("hot_n_tasty_exclusive_title") || DEFAULT_EXCLUSIVE_TITLE
+    cachedText("hot_n_tasty_exclusive_title", DEFAULT_EXCLUSIVE_TITLE)
   );
 
   const [bannerImages, setBannerImages] = useState<string[]>(() => {
-    const saved = localStorage.getItem("hot_n_tasty_banners");
-    return saved ? JSON.parse(saved) : [
-      "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg",
-      "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-    ];
+    const stored = cachedJSON("hot_n_tasty_banners");
+    return Array.isArray(stored) && stored.some((url) => typeof url === "string" && url.trim())
+      ? stored.filter((url): url is string => typeof url === "string" && !!url.trim())
+      : [
+        "/logo.jpg",
+        "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+      ];
   });
 
-  const [logoImage, setLogoImage] = useState<string>(() => {
-    return localStorage.getItem("hot_n_tasty_logo") || "/logo.jpg";
-  });
+  const [logoImage, setLogoImage] = useState<string>(() =>
+    cachedText("hot_n_tasty_logo", "/logo.jpg")
+  );
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -91,7 +120,7 @@ const Index = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+      setCurrentSlide((prev) => bannerImages.length > 0 ? (prev + 1) % bannerImages.length : 0);
     }, 5000);
     return () => clearInterval(timer);
   }, [bannerImages]);
@@ -114,7 +143,7 @@ const Index = () => {
       if (prev[0]?.includes("photo-1555939594-58d7cb561ad1")) {
         const updated = [...prev];
         updated[0] = "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg";
-        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(updated));
+        saveCache("hot_n_tasty_banners", JSON.stringify(updated));
         return updated;
       }
       return prev;
@@ -127,26 +156,26 @@ const Index = () => {
 
       const menuCloud = await getSupabaseMenu();
       if (menuCloud && menuCloud.length > 0) {
-        setMenuList(menuCloud);
-        localStorage.setItem("hot_n_tasty_menu", JSON.stringify(menuCloud));
+        setMenuList(normalizeMenuItems(menuCloud));
+        saveCache("hot_n_tasty_menu", JSON.stringify(normalizeMenuItems(menuCloud)));
       }
 
       const cloudTitle = await getSupabaseExclusiveTitle();
       if (cloudTitle) {
         setExclusiveTitle(cloudTitle);
-        localStorage.setItem("hot_n_tasty_exclusive_title", cloudTitle);
+        saveCache("hot_n_tasty_exclusive_title", cloudTitle);
       }
 
       const bannersCloud = await getSupabaseBanners();
       if (bannersCloud && bannersCloud.length > 0) {
         setBannerImages(bannersCloud);
-        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(bannersCloud));
+        saveCache("hot_n_tasty_banners", JSON.stringify(bannersCloud));
       }
 
       const logoCloud = await getSupabaseLogo();
       if (logoCloud) {
         setLogoImage(logoCloud);
-        localStorage.setItem("hot_n_tasty_logo", logoCloud);
+        saveCache("hot_n_tasty_logo", logoCloud);
       }
     };
 
@@ -160,8 +189,8 @@ const Index = () => {
   const orderedItems = useMemo(() => sortMenuItems(menuList), [menuList]);
 
   const matchesSearch = (item: MenuItem) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.description || "").toLowerCase().includes(searchQuery.toLowerCase());
 
   // Featured deals have their own dedicated section and are never duplicated in the menu.
   const exclusiveItems = orderedItems.filter(
@@ -172,7 +201,7 @@ const Index = () => {
     if (isExclusiveDeal(item)) return false;
     const matchesCategory =
       selectedCategory.toLowerCase() === "all" ||
-      item.category.toLowerCase() === selectedCategory.toLowerCase();
+      (item.category || "").toLowerCase() === selectedCategory.toLowerCase();
     return matchesCategory && matchesSearch(item);
   });
 
@@ -187,7 +216,7 @@ const Index = () => {
     HOT_N_TASTY_CATEGORIES.forEach((cat) => {
       if (cat.id === "all") return;
       const catItems = filteredItems.filter(
-        (item) => item.category.toLowerCase() === cat.id.toLowerCase()
+        (item) => (item.category || "").toLowerCase() === cat.id.toLowerCase()
       );
       if (catItems.length > 0) {
         const cleanName = cat.name.replace(/[^a-zA-Z0-9& ]/g, "").trim().toUpperCase();
@@ -201,7 +230,7 @@ const Index = () => {
 
     const knownCatIds = new Set(HOT_N_TASTY_CATEGORIES.map((c) => c.id.toLowerCase()));
     const otherItems = filteredItems.filter(
-      (item) => !knownCatIds.has(item.category.toLowerCase())
+      (item) => !knownCatIds.has((item.category || "").toLowerCase())
     );
     if (otherItems.length > 0) {
       groups.push({
@@ -218,7 +247,7 @@ const Index = () => {
     if (!searchQuery.trim()) return [];
     return orderedItems
       .filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.name || "").toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 5);
   }, [orderedItems, searchQuery]);
@@ -313,13 +342,22 @@ const Index = () => {
   };
 
   const handleSaveMenu = async (updatedItems: MenuItem[]) => {
+    if (updatedItems.some((item) => !item.id || !item.name.trim() || !Number.isFinite(item.price) || item.price < 0)) {
+      throw new Error("Every menu item must have a name and a valid nonnegative price.");
+    }
+    const previousItems = new Map(menuList.map((item) => [item.id, item]));
+    const changedItems = updatedItems.filter((item) => {
+      const previous = previousItems.get(item.id);
+      return !previous || (["name", "price", "description", "category", "image"] as const)
+        .some((field) => previous[field] !== item[field]);
+    });
     const removedIds = menuList
       .filter((item) => !updatedItems.some((updated) => updated.id === item.id))
       .map((item) => item.id);
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Saving changes to live cloud database...");
       try {
-        await saveSupabaseMenu(updatedItems, removedIds);
+        await saveSupabaseMenu(changedItems, removedIds);
         toast.success("Menu synchronized globally to all customers!");
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "Unknown error";
@@ -332,7 +370,7 @@ const Index = () => {
       toast.success("Menu changes saved locally!");
     }
     setMenuList(updatedItems);
-    localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
+    saveCache("hot_n_tasty_menu", JSON.stringify(updatedItems));
   };
 
   const handleSaveExclusiveTitle = async (newTitle: string) => {
@@ -341,7 +379,7 @@ const Index = () => {
       await saveSupabaseExclusiveTitle(title);
     }
     setExclusiveTitle(title);
-    localStorage.setItem("hot_n_tasty_exclusive_title", title);
+    saveCache("hot_n_tasty_exclusive_title", title);
   };
 
   const handleLogout = () => {
@@ -351,7 +389,7 @@ const Index = () => {
 
   const handleAdminBannersChange = async (newBanners: string[]) => {
     setBannerImages(newBanners);
-    localStorage.setItem("hot_n_tasty_banners", JSON.stringify(newBanners));
+    saveCache("hot_n_tasty_banners", JSON.stringify(newBanners));
 
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live cloud banners...");
@@ -370,7 +408,7 @@ const Index = () => {
 
   const handleAdminLogoChange = async (newLogo: string) => {
     setLogoImage(newLogo);
-    localStorage.setItem("hot_n_tasty_logo", newLogo);
+    saveCache("hot_n_tasty_logo", newLogo);
 
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live restaurant logo...");
