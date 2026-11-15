@@ -13,21 +13,30 @@ export function normalizeMenuItems(value: unknown): MenuItem[] {
   return value.flatMap((raw: unknown) => {
     if (raw === null || typeof raw !== "object") return [];
     const record = raw as Record<string, unknown>;
-    if (typeof record.id !== "string" || !record.id.trim()) return [];
+    const rawId = record.id;
+    const normalizedId = typeof rawId === "string"
+      ? rawId.trim()
+      : typeof rawId === "number" && Number.isFinite(rawId) && Number.isInteger(rawId)
+        ? String(rawId)
+        : "";
+    if (!normalizedId) return [];
     if (typeof record.name !== "string" || !record.name.trim()) return [];
 
     const parsedPrice = Number(record.price);
+    const rawImage = typeof record.image === "string" && record.image.trim()
+      ? record.image
+      : typeof record.image_url === "string" && record.image_url.trim()
+        ? record.image_url
+        : "";
     return [{
-      id: record.id,
+      id: normalizedId,
       name: record.name,
       price: Number.isFinite(parsedPrice) && parsedPrice >= 0 ? parsedPrice : 0,
       description: typeof record.description === "string" ? record.description : "",
       category: typeof record.category === "string" && record.category.trim()
         ? record.category
         : "other",
-      image: typeof record.image === "string" && record.image.trim()
-        ? record.image
-        : FALLBACK_IMAGE,
+      image: rawImage || FALLBACK_IMAGE,
     }];
   });
 }

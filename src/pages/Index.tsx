@@ -40,6 +40,8 @@ import {
   DEFAULT_EXCLUSIVE_TITLE,
   getSupabaseExclusiveTitle,
   saveSupabaseExclusiveTitle,
+  describeSupabaseError,
+  SupabaseMenuSaveError,
 } from "@/lib/supabase";
 
 interface CartItem {
@@ -341,7 +343,7 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSaveMenu = async (updatedItems: MenuItem[]) => {
+  const handleSaveMenu = async (updatedItems: MenuItem[]): Promise<MenuItem[]> => {
     if (updatedItems.some((item) => !item.id || !item.name.trim() || !Number.isFinite(item.price) || item.price < 0)) {
       throw new Error("Every menu item must have a name and a valid nonnegative price.");
     }
@@ -354,23 +356,55 @@ const Index = () => {
     const removedIds = menuList
       .filter((item) => !updatedItems.some((updated) => updated.id === item.id))
       .map((item) => item.id);
+
+    let savedItems = updatedItems;
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Saving changes to live cloud database...");
       try {
-        await saveSupabaseMenu(changedItems, removedIds);
-        toast.success("Menu synchronized globally to all customers!");
+        const insertedIdMap = await saveSupabaseMenu(changedItems, removedIds);
+        savedItems = updatedItems.map((item) => {
+          const databaseId = insertedIdMap.get(item.id);
+          if (!databaseId) return item;
+          return {
+            ...item,
+            id: databaseId,
+            // The category persists the Exclusive Deals identity after the temp ID is replaced.
+            category: isExclusiveDeal(item) ? "exclusive-deals" : item.category,
+          };
+        });
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        toast.error(`Supabase Sync Error: ${message}`, { duration: 15000 });
-        throw err;
+        // Preserve generated IDs for any inserts that completed before a later operation failed.
+        // This prevents duplicate inserts if the user retries after a partial save.
+        if (err instanceof SupabaseMenuSaveError && err.insertedIdMap.size > 0) {
+          savedItems = updatedItems.map((item) => {
+            const databaseId = err.insertedIdMap.get(item.id);
+            if (!databaseId) return item;
+            return {
+              ...item,
+              id: databaseId,
+              category: isExclusiveDeal(item) ? "exclusive-deals" : item.category,
+            };
+          });
+          setMenuList(savedItems);
+          saveCache("hot_n_tasty_menu", JSON.stringify(savedItems));
+        }
+        // The Admin Dashboard shows one actionable error. Avoid two stacked toasts.
+        console.error("Supabase menu save failed:", err);
+        const saveError = new Error(`Supabase sync failed: ${describeSupabaseError(err)}`) as Error & { partiallySavedItems?: MenuItem[] };
+        if (err instanceof SupabaseMenuSaveError && err.insertedIdMap.size > 0) {
+          saveError.partiallySavedItems = savedItems;
+        }
+        throw saveError;
       } finally {
         toast.dismiss(syncLoader);
       }
     } else {
       toast.success("Menu changes saved locally!");
     }
-    setMenuList(updatedItems);
-    saveCache("hot_n_tasty_menu", JSON.stringify(updatedItems));
+
+    setMenuList(savedItems);
+    saveCache("hot_n_tasty_menu", JSON.stringify(savedItems));
+    return savedItems;
   };
 
   const handleSaveExclusiveTitle = async (newTitle: string) => {
