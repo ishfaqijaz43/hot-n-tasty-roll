@@ -25,16 +25,23 @@ import { HotNTastyCartDrawer } from "@/components/HotNTastyCartDrawer";
 import { LoginModal } from "@/components/LoginModal";
 import { HotNTastyAdminDashboard } from "@/components/HotNTastyAdminDashboard";
 import { toast } from "sonner";
+import { normalizeMenuItems, sortMenuItems } from "@/utils/menuSorting";
+import { isExclusiveDeal } from "@/utils/exclusiveDeals";
 import Carousel from "@/components/Carousel";
 import SliderControls from "@/components/SliderControls";
-import { 
-  getSupabaseMenu, 
-  saveSupabaseMenu, 
-  getSupabaseBanners, 
+import {
+  getSupabaseMenu,
+  saveSupabaseMenu,
+  getSupabaseBanners,
   saveSupabaseBanners,
   getSupabaseLogo,
   saveSupabaseLogo,
-  isSupabaseConfigured 
+  isSupabaseConfigured,
+  DEFAULT_EXCLUSIVE_TITLE,
+  getSupabaseExclusiveTitle,
+  saveSupabaseExclusiveTitle,
+  describeSupabaseError,
+  SupabaseMenuSaveError,
 } from "@/lib/supabase";
 
 interface CartItem {
@@ -42,24 +49,57 @@ interface CartItem {
   quantity: number;
 }
 
+/** Invalid / outdated browser storage must never crash React at startup. */
+function cachedJSON(key: string): unknown {
+  try {
+    const cached = localStorage.getItem(key);
+    return cached ? JSON.parse(cached) : null;
+  } catch (error) {
+    console.warn(`Ignoring invalid stored ${key}:`, error);
+    return null;
+  }
+}
+
+function cachedText(key: string, fallback: string): string {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveCache(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.warn(`Unable to cache ${key}:`, error);
+  }
+}
+
 const Index = () => {
   const [menuList, setMenuList] = useState<MenuItem[]>(() => {
-    const saved = localStorage.getItem("hot_n_tasty_menu");
-    return saved ? JSON.parse(saved) : defaultHotNTastyMenuItems;
+    const stored = normalizeMenuItems(cachedJSON("hot_n_tasty_menu"));
+    return stored.length > 0 ? stored : defaultHotNTastyMenuItems;
   });
+
+  const [exclusiveTitle, setExclusiveTitle] = useState<string>(() =>
+    cachedText("hot_n_tasty_exclusive_title", DEFAULT_EXCLUSIVE_TITLE)
+  );
 
   const [bannerImages, setBannerImages] = useState<string[]>(() => {
-    const saved = localStorage.getItem("hot_n_tasty_banners");
-    return saved ? JSON.parse(saved) : [
-      "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg",
-      "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-    ];
+    const stored = cachedJSON("hot_n_tasty_banners");
+    return Array.isArray(stored) && stored.some((url) => typeof url === "string" && url.trim())
+      ? stored.filter((url): url is string => typeof url === "string" && !!url.trim())
+      : [
+        "/logo.jpg",
+        "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
+      ];
   });
 
-  const [logoImage, setLogoImage] = useState<string>(() => {
-    return localStorage.getItem("hot_n_tasty_logo") || "/logo.jpg";
-  });
+  const [logoImage, setLogoImage] = useState<string>(() =>
+    cachedText("hot_n_tasty_logo", "/logo.jpg")
+  );
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -70,7 +110,7 @@ const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
   const [showFloatingButtons, setShowFloatingButtons] = useState(false);
-  
+
   const [logoHasError, setLogoHasError] = useState(false);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -82,7 +122,7 @@ const Index = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+      setCurrentSlide((prev) => bannerImages.length > 0 ? (prev + 1) % bannerImages.length : 0);
     }, 5000);
     return () => clearInterval(timer);
   }, [bannerImages]);
@@ -105,7 +145,7 @@ const Index = () => {
       if (prev[0]?.includes("photo-1555939594-58d7cb561ad1")) {
         const updated = [...prev];
         updated[0] = "/WhatsApp Image 2026-07-06 at 8.30.20 PM.jpeg";
-        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(updated));
+        saveCache("hot_n_tasty_banners", JSON.stringify(updated));
         return updated;
       }
       return prev;
@@ -115,23 +155,29 @@ const Index = () => {
   useEffect(() => {
     const loadCloudData = async () => {
       if (!isSupabaseConfigured) return;
-      
+
       const menuCloud = await getSupabaseMenu();
       if (menuCloud && menuCloud.length > 0) {
-        setMenuList(menuCloud);
-        localStorage.setItem("hot_n_tasty_menu", JSON.stringify(menuCloud));
+        setMenuList(normalizeMenuItems(menuCloud));
+        saveCache("hot_n_tasty_menu", JSON.stringify(normalizeMenuItems(menuCloud)));
+      }
+
+      const cloudTitle = await getSupabaseExclusiveTitle();
+      if (cloudTitle) {
+        setExclusiveTitle(cloudTitle);
+        saveCache("hot_n_tasty_exclusive_title", cloudTitle);
       }
 
       const bannersCloud = await getSupabaseBanners();
       if (bannersCloud && bannersCloud.length > 0) {
         setBannerImages(bannersCloud);
-        localStorage.setItem("hot_n_tasty_banners", JSON.stringify(bannersCloud));
+        saveCache("hot_n_tasty_banners", JSON.stringify(bannersCloud));
       }
 
       const logoCloud = await getSupabaseLogo();
       if (logoCloud) {
         setLogoImage(logoCloud);
-        localStorage.setItem("hot_n_tasty_logo", logoCloud);
+        saveCache("hot_n_tasty_logo", logoCloud);
       }
     };
 
@@ -142,19 +188,24 @@ const Index = () => {
     return cartItems.reduce((sum, cartItem) => sum + cartItem.item.price * cartItem.quantity, 0);
   }, [cartItems]);
 
-  const filteredItems = useMemo(() => {
-    return menuList.filter((item) => {
-      const matchesCategory =
-        selectedCategory.toLowerCase() === "all" || 
-        item.category.toLowerCase() === selectedCategory.toLowerCase();
-      
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      return matchesCategory && matchesSearch;
-    });
-  }, [menuList, selectedCategory, searchQuery]);
+  const orderedItems = useMemo(() => sortMenuItems(menuList), [menuList]);
+
+  const matchesSearch = (item: MenuItem) =>
+    (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+  // Featured deals have their own dedicated section and are never duplicated in the menu.
+  const exclusiveItems = orderedItems.filter(
+    (item) => isExclusiveDeal(item) && matchesSearch(item)
+  );
+
+  const filteredItems = orderedItems.filter((item) => {
+    if (isExclusiveDeal(item)) return false;
+    const matchesCategory =
+      selectedCategory.toLowerCase() === "all" ||
+      (item.category || "").toLowerCase() === selectedCategory.toLowerCase();
+    return matchesCategory && matchesSearch(item);
+  });
 
   // Group items by category for "All categories" view
   const groupedItems = useMemo(() => {
@@ -163,11 +214,11 @@ const Index = () => {
     }
 
     const groups: { categoryId: string; categoryName: string; items: MenuItem[] }[] = [];
-    
+
     HOT_N_TASTY_CATEGORIES.forEach((cat) => {
       if (cat.id === "all") return;
       const catItems = filteredItems.filter(
-        (item) => item.category.toLowerCase() === cat.id.toLowerCase()
+        (item) => (item.category || "").toLowerCase() === cat.id.toLowerCase()
       );
       if (catItems.length > 0) {
         const cleanName = cat.name.replace(/[^a-zA-Z0-9& ]/g, "").trim().toUpperCase();
@@ -181,7 +232,7 @@ const Index = () => {
 
     const knownCatIds = new Set(HOT_N_TASTY_CATEGORIES.map((c) => c.id.toLowerCase()));
     const otherItems = filteredItems.filter(
-      (item) => !knownCatIds.has(item.category.toLowerCase())
+      (item) => !knownCatIds.has((item.category || "").toLowerCase())
     );
     if (otherItems.length > 0) {
       groups.push({
@@ -196,12 +247,12 @@ const Index = () => {
 
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return menuList
+    return orderedItems
       .filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.name || "").toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 5);
-  }, [menuList, searchQuery]);
+  }, [orderedItems, searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -240,7 +291,7 @@ const Index = () => {
           return i;
         })
         .filter((i) => i.quantity > 0);
-      
+
       if (updated.length === 0) {
         setShowCartNotification(false);
       }
@@ -292,25 +343,77 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSaveMenu = async (updatedItems: MenuItem[]) => {
-    setMenuList(updatedItems);
-    localStorage.setItem("hot_n_tasty_menu", JSON.stringify(updatedItems));
-    
+  const handleSaveMenu = async (updatedItems: MenuItem[]): Promise<MenuItem[]> => {
+    if (updatedItems.some((item) => !item.id || !item.name.trim() || !Number.isFinite(item.price) || item.price < 0)) {
+      throw new Error("Every menu item must have a name and a valid nonnegative price.");
+    }
+    const previousItems = new Map(menuList.map((item) => [item.id, item]));
+    const changedItems = updatedItems.filter((item) => {
+      const previous = previousItems.get(item.id);
+      return !previous || (["name", "price", "description", "category", "image"] as const)
+        .some((field) => previous[field] !== item[field]);
+    });
+    const removedIds = menuList
+      .filter((item) => !updatedItems.some((updated) => updated.id === item.id))
+      .map((item) => item.id);
+
+    let savedItems = updatedItems;
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Saving changes to live cloud database...");
       try {
-        await saveSupabaseMenu(updatedItems);
+        const insertedIdMap = await saveSupabaseMenu(changedItems, removedIds);
+        savedItems = updatedItems.map((item) => {
+          const databaseId = insertedIdMap.get(item.id);
+          if (!databaseId) return item;
+          return {
+            ...item,
+            id: databaseId,
+            // The category persists the Exclusive Deals identity after the temp ID is replaced.
+            category: isExclusiveDeal(item) ? "exclusive-deals" : item.category,
+          };
+        });
+      } catch (err: unknown) {
+        // Preserve generated IDs for any inserts that completed before a later operation failed.
+        // This prevents duplicate inserts if the user retries after a partial save.
+        if (err instanceof SupabaseMenuSaveError && err.insertedIdMap.size > 0) {
+          savedItems = updatedItems.map((item) => {
+            const databaseId = err.insertedIdMap.get(item.id);
+            if (!databaseId) return item;
+            return {
+              ...item,
+              id: databaseId,
+              category: isExclusiveDeal(item) ? "exclusive-deals" : item.category,
+            };
+          });
+          setMenuList(savedItems);
+          saveCache("hot_n_tasty_menu", JSON.stringify(savedItems));
+        }
+        // The Admin Dashboard shows one actionable error. Avoid two stacked toasts.
+        console.error("Supabase menu save failed:", err);
+        const saveError = new Error(`Supabase sync failed: ${describeSupabaseError(err)}`) as Error & { partiallySavedItems?: MenuItem[] };
+        if (err instanceof SupabaseMenuSaveError && err.insertedIdMap.size > 0) {
+          saveError.partiallySavedItems = savedItems;
+        }
+        throw saveError;
+      } finally {
         toast.dismiss(syncLoader);
-        toast.success("Menu synchronized globally to all customers!");
-      } catch (err: any) {
-        toast.dismiss(syncLoader);
-        console.error("Supabase live save operation crash details:", err);
-        const errMsg = err?.message || err?.details || JSON.stringify(err);
-        toast.error(`Supabase Sync Error: ${errMsg}`, { duration: 15000 });
       }
     } else {
       toast.success("Menu changes saved locally!");
     }
+
+    setMenuList(savedItems);
+    saveCache("hot_n_tasty_menu", JSON.stringify(savedItems));
+    return savedItems;
+  };
+
+  const handleSaveExclusiveTitle = async (newTitle: string) => {
+    const title = newTitle.trim() || DEFAULT_EXCLUSIVE_TITLE;
+    if (isSupabaseConfigured) {
+      await saveSupabaseExclusiveTitle(title);
+    }
+    setExclusiveTitle(title);
+    saveCache("hot_n_tasty_exclusive_title", title);
   };
 
   const handleLogout = () => {
@@ -320,7 +423,7 @@ const Index = () => {
 
   const handleAdminBannersChange = async (newBanners: string[]) => {
     setBannerImages(newBanners);
-    localStorage.setItem("hot_n_tasty_banners", JSON.stringify(newBanners));
+    saveCache("hot_n_tasty_banners", JSON.stringify(newBanners));
 
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live cloud banners...");
@@ -339,7 +442,7 @@ const Index = () => {
 
   const handleAdminLogoChange = async (newLogo: string) => {
     setLogoImage(newLogo);
-    localStorage.setItem("hot_n_tasty_logo", newLogo);
+    saveCache("hot_n_tasty_logo", newLogo);
 
     if (isSupabaseConfigured) {
       const syncLoader = toast.loading("Updating live restaurant logo...");
@@ -382,7 +485,9 @@ const Index = () => {
             Rs. {item.price}
           </div>
           <span className="absolute bottom-3 left-3 bg-zinc-900/85 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest font-extrabold px-2.5 py-1 rounded-md">
-            {HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
+            {isExclusiveDeal(item)
+              ? "Special Offer"
+              : HOT_N_TASTY_CATEGORIES.find((c) => c.id === item.category)?.name.replace(/[^a-zA-Z ]/g, "").trim() || item.category}
           </span>
         </div>
 
@@ -442,6 +547,8 @@ const Index = () => {
         items={menuList}
         banners={bannerImages}
         logo={logoImage}
+        exclusiveTitle={exclusiveTitle}
+        onExclusiveTitleSave={handleSaveExclusiveTitle}
         onSave={handleSaveMenu}
         onLogout={handleLogout}
         onBannersChange={handleAdminBannersChange}
@@ -461,9 +568,9 @@ const Index = () => {
           >
             <div className="relative w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center overflow-hidden shadow-md sm:shadow-lg shadow-red-600/20 group-hover:scale-105 transition-transform">
               {!logoHasError ? (
-                <img 
-                  src={logoImage} 
-                  alt="Hot N Tasty Roll BBQ Gulistan-e-johar" 
+                <img
+                  src={logoImage}
+                  alt="Hot N Tasty Roll BBQ Gulistan-e-johar"
                   className="w-full h-full object-cover"
                   onError={() => setLogoHasError(true)}
                 />
@@ -471,7 +578,7 @@ const Index = () => {
                 <Flame className="w-5 h-5 sm:w-7 sm:h-7 text-white animate-pulse" />
               )}
             </div>
-            
+
             <div className="flex flex-col">
               <span className="text-sm sm:text-lg font-black tracking-tight text-zinc-900 group-hover:text-red-600 transition-colors leading-none">
                 HOT N <span className="text-red-600">TASTY</span>
@@ -483,6 +590,11 @@ const Index = () => {
           </div>
 
           <nav className="hidden lg:flex items-center gap-8 shrink-0">
+            {menuList.some(isExclusiveDeal) && (
+              <button onClick={() => scrollToSection("exclusive-deals")} className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors">
+                Special Offers
+              </button>
+            )}
             <button
               onClick={() => scrollToSection("menu")}
               className="text-sm font-bold text-zinc-700 hover:text-red-600 transition-colors"
@@ -511,7 +623,7 @@ const Index = () => {
               >
                 <Search className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-700 hover:text-red-600 transition-colors" />
               </button>
-              
+
               <div className={`absolute right-full mr-2 transition-all duration-300 transform origin-right ${
                 isSearchExpanded ? "w-28 xs:w-36 sm:w-64 scale-100 opacity-100" : "w-0 scale-95 opacity-0 pointer-events-none"
               }`}>
@@ -545,7 +657,7 @@ const Index = () => {
                       onMouseDown={() => {
                         setSearchQuery(suggestion.name);
                         setIsSearchFocused(false);
-                        scrollToSection("menu");
+                        setTimeout(() => scrollToSection(isExclusiveDeal(suggestion) ? "exclusive-deals" : "menu"), 50);
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-zinc-50 text-xs sm:text-sm text-zinc-800 font-bold transition-colors border-b border-zinc-100 last:border-0 block"
                     >
@@ -581,6 +693,11 @@ const Index = () => {
 
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-white border-b border-zinc-200 px-4 py-6 space-y-4 animate-in fade-in slide-in-from-top-5 duration-200">
+            {menuList.some(isExclusiveDeal) && (
+              <button onClick={() => scrollToSection("exclusive-deals")} className="block w-full text-left py-2 text-base font-bold text-red-600">
+                Special Offers
+              </button>
+            )}
             <button
               onClick={() => scrollToSection("menu")}
               className="block w-full text-left py-2 text-base font-bold text-zinc-700 hover:text-red-600 transition-colors"
@@ -616,6 +733,26 @@ const Index = () => {
           onChange={setCurrentSlide}
         />
       </section>
+
+      {/* Featured promotions: uses the same add-to-cart flow as the regular menu. */}
+      {exclusiveItems.length > 0 && (
+        <section id="exclusive-deals" className="py-16 sm:py-20 bg-gradient-to-b from-red-50 via-white to-zinc-50 border-b border-red-100 scroll-mt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
+                <Sparkles className="w-4 h-4" /> Limited-time offers
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight break-words">
+                {exclusiveTitle}
+              </h2>
+              <p className="text-zinc-600 text-sm sm:text-base">Special offers picked just for you.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {exclusiveItems.map((item) => renderMenuItemCard(item))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Interactive Menu Section */}
       <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200 scroll-mt-24 sm:scroll-mt-28">
@@ -658,7 +795,9 @@ const Index = () => {
                 <Utensils className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
                 <h3 className="text-lg font-bold text-zinc-800">No items found</h3>
                 <p className="text-zinc-500 text-xs sm:text-sm mt-1">
-                  We couldn't find any menu items in this category matching your search. Please check another tab or search query.
+                  {exclusiveItems.length > 0
+                    ? "Matching special offers are shown in the featured deals section above."
+                    : "We couldn't find any menu items in this category matching your search. Please check another tab or search query."}
                 </p>
                 <button
                   onClick={() => {
@@ -912,7 +1051,7 @@ const Index = () => {
 
             <div className="relative aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex flex-col items-center justify-center text-center p-8 space-y-4 shadow-sm">
               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]" />
-              
+
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-600 relative z-10 border border-red-100">
                 <MapPin className="w-8 h-8" />
               </div>
@@ -943,7 +1082,7 @@ const Index = () => {
             <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <Flame className="w-5 h-5 text-white" />
             </div>
-            
+
             <div className="flex flex-col">
               <span className="text-xl font-black tracking-tight text-zinc-900">
                 HOT N <span className="text-red-600">TASTY</span>
@@ -956,7 +1095,7 @@ const Index = () => {
           <p className="text-zinc-500 text-xs sm:text-sm max-w-md mx-auto">
             Gulistan-e-Johar's premium street-food destination. Sizzling hot, freshly prepared, and delivered straight to your doorstep.
           </p>
-          
+
           <div className="pt-2">
             <button
               onClick={() => setIsLoginModalOpen(true)}
