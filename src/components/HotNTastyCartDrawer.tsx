@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Plus, Minus, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle, PackageCheck, Clock } from "lucide-react";
+import { X, Plus, Minus, ArrowLeft, ArrowRight, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle, PackageCheck, Clock } from "lucide-react";
 import { MenuItem } from "@/data/hotNTastyMenu";
 import { getCartSuggestions } from "@/utils/cartSuggestions";
 import { toast } from "sonner";
@@ -70,6 +70,16 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
   const [selectedArea, setSelectedArea] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [showWarning, setShowWarning] = useState(false);
+  // Two full-height screens on mobile. Desktop retains the original split cart + form layout.
+  const [mobileStep, setMobileStep] = useState<"cart" | "checkout">("cart");
+
+  useEffect(() => {
+    if (!isOpen) setMobileStep("cart");
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (cartItems.length === 0) setMobileStep("cart");
+  }, [cartItems.length]);
   const suggestions = React.useMemo(() => getCartSuggestions(cartItems, menuItems, 5), [cartItems, menuItems]);
 
   // Live Timer states
@@ -193,10 +203,12 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
     
     message += `\n-------------------------\n*ITEMS ORDERED:*\n${itemsText}\n-------------------------\n*Subtotal:* Rs. ${subtotal}\n*Delivery Fee:* ${deliveryFeeText}\n-------------------------`;
     
-    if (orderType === "delivery" && !isAreaOther) {
-      message += `\n*Total Bill:* Rs. ${grandTotal}`;
-    } else {
+    if (orderType === "pickup") {
+      message += `\n*Total Bill:* Rs. ${subtotal}`;
+    } else if (isAreaOther) {
       message += `\n*Total Bill:* Rs. ${subtotal} + Delivery (Calculate on Call)`;
+    } else {
+      message += `\n*Total Bill:* Rs. ${grandTotal}`;
     }
 
     const encodedMessage = encodeURIComponent(message);
@@ -216,33 +228,58 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-[#0F0F11] border-l border-zinc-800 shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col ${
+        className={`fixed top-0 right-0 h-screen h-[100dvh] w-full sm:w-[450px] bg-[#0F0F11] border-l border-zinc-800 shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col overflow-hidden ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-red-600/10 rounded-xl text-red-600">
+        {/* Mobile uses two separate screens, never two competing scroll panels. */}
+        <div className="shrink-0 px-4 py-4 sm:p-6 border-b border-zinc-800 flex items-center justify-between gap-2 bg-zinc-900/50 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-6">
+          <div className="flex items-center gap-3 min-w-0">
+            {mobileStep === "checkout" && (
+              <button
+                type="button"
+                onClick={() => setMobileStep("cart")}
+                className="sm:hidden p-2 -ml-1 rounded-lg text-zinc-200 hover:bg-zinc-800"
+                aria-label="Back to cart review"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <div className="p-2.5 bg-red-600/10 rounded-xl text-red-600 shrink-0">
               <ShoppingBag className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="font-black text-lg text-white tracking-tight">Your Cart</h3>
+            <div className="min-w-0">
+              <h3 className="font-black text-lg text-white tracking-tight">
+                <span className="sm:hidden">{mobileStep === "cart" ? "Your Cart" : "Checkout"}</span>
+                <span className="hidden sm:inline">Your Cart</span>
+              </h3>
               <p className="text-xs text-zinc-400">
-                {cartItems.length} {cartItems.length === 1 ? "item" : "items"} selected
+                <span className="sm:hidden">
+                  {mobileStep === "cart"
+                    ? `${cartItems.length} ${cartItems.length === 1 ? "item" : "items"} · Step 1 of 2`
+                    : "Pickup or delivery · Step 2 of 2"}
+                </span>
+                <span className="hidden sm:inline">
+                  {cartItems.length} {cartItems.length === 1 ? "item" : "items"} selected
+                </span>
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors"
+            aria-label="Close cart"
+            className="p-2 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Cart Items List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {/* Screen 1: selected items + related add-ons. On desktop it remains the original left/upper panel. */}
+        <div
+          className={`${mobileStep === "checkout" ? "hidden sm:block" : "block"} flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4`}
+          aria-label="Cart items and suggested add-ons"
+        >
           {cartItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
               <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center text-zinc-600">
@@ -317,8 +354,7 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
                 </div>
               ))}
 
-              {/* Cart upsells are part of the existing scroll area, not a modal
-                  and not an additional checkout step. */}
+              {/* Suggestions share the cart-review screen on mobile; no checkout form obscures them. */}
               {suggestions.length > 0 && (
                 <section aria-labelledby="cart-suggestions-title" className="mt-6 border-t border-zinc-800 pt-5">
                   <div className="mb-3 flex items-start justify-between gap-2">
@@ -334,11 +370,11 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
                       Recommended
                     </span>
                   </div>
-                  <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory" aria-label="Suggested menu items">
+                  <div className="grid grid-cols-2 gap-3 pb-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory" aria-label="Suggested menu items">
                     {suggestions.map((item) => {
                       const alreadyInCart = cartItems.some(({ item: selected }) => selected.id === item.id);
                       return (
-                        <article key={item.id} className="w-[150px] min-w-[150px] snap-start rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/70 flex flex-col">
+                        <article key={item.id} className="min-w-0 w-full sm:w-[150px] sm:min-w-[150px] sm:snap-start rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/70 flex flex-col">
                           <img src={item.image || "/logo.jpg"} alt={item.name} loading="lazy" className="w-full h-24 object-cover bg-zinc-800" />
                           <div className="p-2.5 flex flex-col flex-1 gap-2">
                             <div className="flex-1">
@@ -368,9 +404,50 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
           )}
         </div>
 
-        {/* Footer Summary & Checkout */}
+        {/* Mobile cart-review action stays at the bottom while the products and add-ons scroll freely. */}
+        {cartItems.length > 0 && mobileStep === "cart" && (
+          <div className="sm:hidden shrink-0 border-t border-zinc-800 bg-[#18181b] px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(0,0,0,0.45)]">
+            <div className="flex justify-between items-center mb-3 text-sm">
+              <span className="text-zinc-400">Subtotal ({cartItems.reduce((count, selected) => count + selected.quantity, 0)} items)</span>
+              <span className="font-black text-white">Rs {subtotal}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowWarning(false); setMobileStep("checkout"); }}
+              className="w-full rounded-xl bg-red-600 hover:bg-red-500 text-white font-black py-3.5 flex justify-center items-center gap-2 active:scale-[0.99] transition"
+            >
+              Proceed to Checkout
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onClearCart}
+              className="w-full mt-2 text-xs text-zinc-500 hover:text-zinc-300 py-1"
+            >
+              Clear All Items
+            </button>
+          </div>
+        )}
+
+        {/* Screen 2: pickup/delivery and WhatsApp checkout. Desktop retains its original form. */}
         {cartItems.length > 0 && (
-          <div className="p-6 border-t border-zinc-800 bg-zinc-900/90 space-y-4 max-h-[65%] overflow-y-auto">
+          <div
+            className={`${mobileStep === "cart" ? "hidden sm:block" : "block"} flex-1 min-h-0 sm:flex-none p-4 sm:p-6 border-t border-zinc-800 bg-zinc-900/90 space-y-4 overflow-y-auto overscroll-contain sm:max-h-[65%] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6`}
+            aria-label="Checkout details"
+          >
+            <div className="sm:hidden flex items-center justify-between gap-3 rounded-xl bg-zinc-950 border border-zinc-800 px-3 py-3">
+              <div>
+                <p className="text-xs text-zinc-400">Review your order</p>
+                <p className="font-bold text-white text-sm">{cartItems.reduce((count, selected) => count + selected.quantity, 0)} items · Rs {subtotal}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileStep("cart")}
+                className="text-xs font-bold text-red-400 px-3 py-2 rounded-lg border border-red-500/30 hover:bg-red-500/10"
+              >
+                Edit cart
+              </button>
+            </div>
             {/* Order Type Toggle */}
             <div className="space-y-3 border-b border-zinc-800 pb-4">
               <div className="flex items-center justify-between">
