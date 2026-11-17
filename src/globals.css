@@ -99,3 +99,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Approved restaurant wallpaper: only the menu + Exclusive Deals areas. */
+.hnt-food-texture {
+  background-color: #fff8f0;
+  background-image: url("/food-texture-approved.jpg");
+  background-size: 480px 480px;
+  background-position: center top;
+  background-repeat: repeat;
+}
+
+.hnt-sticky-category-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hnt-sticky-category-scroll::-webkit-scrollbar {
+  display: none;
+}

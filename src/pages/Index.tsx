@@ -110,6 +110,12 @@ const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showCartNotification, setShowCartNotification] = useState(false);
   const [showFloatingButtons, setShowFloatingButtons] = useState(false);
+  const [showAllExclusiveDeals, setShowAllExclusiveDeals] = useState(false);
+  const [showStickyCategories, setShowStickyCategories] = useState(false);
+  const [stickyTop, setStickyTop] = useState(64);
+  const headerRef = useRef<HTMLElement>(null);
+  const originalCategoriesRef = useRef<HTMLDivElement>(null);
+  const menuSectionRef = useRef<HTMLElement>(null);
 
   const [logoHasError, setLogoHasError] = useState(false);
 
@@ -139,6 +145,46 @@ const Index = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // This is an ADDITIONAL mobile-only navigation bar. The original category buttons
+  // and their existing click behavior/layout are never changed. It appears only
+  // after the original category block has passed behind the sticky site header.
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const header = headerRef.current;
+      const categories = originalCategoriesRef.current;
+      const menu = menuSectionRef.current;
+      if (!header || !categories || !menu || window.innerWidth >= 640) {
+        setShowStickyCategories(false);
+        return;
+      }
+
+      const headerBottom = Math.max(0, header.getBoundingClientRect().bottom);
+      setStickyTop((prev) => prev === Math.round(headerBottom) ? prev : Math.round(headerBottom));
+      const originalIsPast = categories.getBoundingClientRect().bottom <= headerBottom;
+      const menuStillVisible = menu.getBoundingClientRect().bottom > headerBottom + 52;
+      setShowStickyCategories((prev) => {
+        const next = originalIsPast && menuStillVisible;
+        return prev === next ? prev : next;
+      });
+    };
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(requestUpdate) : null;
+    if (headerRef.current) resizeObserver?.observe(headerRef.current);
+    requestUpdate();
+    return () => {
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      resizeObserver?.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     setBannerImages((prev) => {
@@ -198,6 +244,11 @@ const Index = () => {
   const exclusiveItems = orderedItems.filter(
     (item) => isExclusiveDeal(item) && matchesSearch(item)
   );
+  // Preserve the main menu's position when a promotion has more than four deals.
+  // Search results are never hidden behind the "View all" control.
+  const visibleExclusiveItems = showAllExclusiveDeals || searchQuery.trim()
+    ? exclusiveItems
+    : exclusiveItems.slice(0, 4);
 
   const filteredItems = orderedItems.filter((item) => {
     if (isExclusiveDeal(item)) return false;
@@ -323,6 +374,20 @@ const Index = () => {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const handleStickyCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    // The compact bar sits below the site header, so reserve space for both
+    // when scrolling to the results. The ORIGINAL button handler stays intact.
+    window.setTimeout(() => {
+      const target = document.getElementById("menu-items-grid");
+      if (!target) return;
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 64;
+      const offset = headerHeight + 56 + 8;
+      const top = window.scrollY + target.getBoundingClientRect().top - offset;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }, 50);
   };
 
   const handleFloatingSearchClick = () => {
@@ -541,6 +606,60 @@ const Index = () => {
     );
   };
 
+  const renderCompactExclusiveDealCard = (item: MenuItem) => {
+    const quantity = getItemQuantityInCart(item.id);
+    return (
+      <article key={item.id} className="min-w-0 flex flex-col overflow-hidden rounded-xl border border-red-100 bg-white/95 shadow-sm">
+        <div className="relative aspect-[2/1] overflow-hidden bg-zinc-100">
+          <img
+            src={item.image}
+            alt={item.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/logo.jpg";
+            }}
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-1 p-2.5">
+          <h3 className="min-h-[2rem] text-xs font-extrabold leading-4 text-zinc-900 line-clamp-2" title={item.name}>
+            {item.name}
+          </h3>
+          {item.description && (
+            <details className="text-[10px] text-zinc-600">
+              <summary className="cursor-pointer font-semibold text-red-700">Details</summary>
+              <p className="mt-1 leading-snug break-words">{item.description}</p>
+            </details>
+          )}
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-1 pt-1">
+            <span className="text-xs font-black text-red-600">Rs. {item.price}</span>
+            {quantity > 0 ? (
+              <div className="flex items-center rounded-lg bg-red-600 text-white">
+                <button type="button" onClick={() => handleUpdateQuantity(item.id, -1)} aria-label={`Remove one ${item.name}`} className="min-h-8 min-w-7 flex items-center justify-center rounded-l-lg hover:bg-red-700">
+                  <Minus className="h-3 w-3" />
+                </button>
+                <span className="px-1 text-xs font-bold" aria-live="polite">{quantity}</span>
+                <button type="button" onClick={() => handleUpdateQuantity(item.id, 1)} aria-label={`Add one ${item.name}`} className="min-h-8 min-w-7 flex items-center justify-center rounded-r-lg hover:bg-red-700">
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleAddToCart(item)}
+                aria-label={`Add ${item.name} to cart`}
+                className="min-h-8 rounded-lg bg-red-600 px-2.5 text-[11px] font-bold text-white hover:bg-red-700"
+              >
+                + Add
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  };
+
   if (isAdminMode) {
     return (
       <HotNTastyAdminDashboard
@@ -560,7 +679,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-red-600 selection:text-white">
       {/* Sticky Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
+      <header ref={headerRef} className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex flex-row justify-between items-center flex-nowrap gap-4">
           <div
             onClick={() => scrollToSection("hero")}
@@ -720,6 +839,33 @@ const Index = () => {
         )}
       </header>
 
+      {/* NEW mobile-only bar, independent of the existing category buttons. */}
+      {showStickyCategories && (
+        <nav
+          aria-label="Quick menu categories"
+          className="fixed inset-x-0 z-30 border-b border-zinc-200 bg-white/95 shadow-md backdrop-blur-md sm:hidden"
+          style={{ top: stickyTop }}
+        >
+          <div className="hnt-sticky-category-scroll flex items-center gap-2 overflow-x-auto overscroll-x-contain px-3 py-2">
+            {HOT_N_TASTY_CATEGORIES.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                aria-pressed={selectedCategory.toLowerCase() === category.id.toLowerCase()}
+                onClick={() => handleStickyCategoryClick(category.id)}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-2 text-xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 ${
+                  selectedCategory.toLowerCase() === category.id.toLowerCase()
+                    ? "border-red-600 bg-red-600 text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-red-300"
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
+
       {/* Hero Section */}
       <section id="hero" className="relative w-full aspect-video sm:aspect-none h-auto sm:h-[550px] lg:h-[650px] flex items-center justify-center overflow-hidden bg-zinc-950">
         <Carousel
@@ -734,43 +880,51 @@ const Index = () => {
         />
       </section>
 
-      {/* Featured promotions: uses the same add-to-cart flow as the regular menu. */}
+      {/* Compact promotions on MOBILE only; desktop retains the current cards. */}
       {exclusiveItems.length > 0 && (
-        <section id="exclusive-deals" className="py-16 sm:py-20 bg-gradient-to-b from-red-50 via-white to-zinc-50 border-b border-red-100 scroll-mt-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600 text-white text-xs font-black uppercase tracking-wider shadow-sm">
-                <Sparkles className="w-4 h-4" /> Limited-time offers
+        <section id="exclusive-deals" className="hnt-food-texture scroll-mt-24 border-b border-red-100 py-6 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-4 space-y-1.5 text-center sm:mb-10 sm:space-y-3">
+              <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-sm">
+                <Sparkles className="h-4 w-4" /> Limited-time offers
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight break-words">
+              <h2 className="break-words text-2xl font-black tracking-tight text-zinc-900 sm:text-5xl">
                 {exclusiveTitle}
               </h2>
-              <p className="text-zinc-600 text-sm sm:text-base">Special offers picked just for you.</p>
+              <p className="hidden text-sm text-zinc-600 sm:block sm:text-base">Special offers picked just for you.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="grid grid-cols-2 gap-2.5 sm:hidden">
+              {visibleExclusiveItems.map((item) => renderCompactExclusiveDealCard(item))}
+            </div>
+            <div className="hidden sm:grid sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
               {exclusiveItems.map((item) => renderMenuItemCard(item))}
             </div>
+            {!searchQuery.trim() && exclusiveItems.length > 4 && (
+              <div className="mt-4 flex justify-center sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowAllExclusiveDeals((prev) => !prev)}
+                  className="rounded-full border border-red-200 bg-white px-5 py-2.5 text-sm font-extrabold text-red-700 shadow-sm hover:bg-red-50"
+                  aria-expanded={showAllExclusiveDeals}
+                >
+                  {showAllExclusiveDeals ? "Show fewer deals" : `View all ${exclusiveItems.length} deals`}
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
 
       {/* Interactive Menu Section */}
-      <section id="menu" className="py-24 bg-zinc-50 border-y border-zinc-200 scroll-mt-24 sm:scroll-mt-28">
+      <section id="menu" ref={menuSectionRef} className="hnt-food-texture py-8 sm:py-24 border-y border-zinc-200 scroll-mt-24 sm:scroll-mt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider border border-red-100">
-              <Sparkles className="w-3.5 h-3.5" />
-              Freshly Prepared
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight">
-              Explore Our Sizzling Menu
+          <div className="mx-auto mb-6 max-w-3xl text-center sm:mb-12">
+            <h2 className="text-2xl font-black tracking-tight text-zinc-900 sm:text-5xl">
+              Our Menu
             </h2>
-            <p className="text-zinc-600 text-sm sm:text-base">
-              From spicy Chicken Rolls to loaded burgers, chinese specialties, and premium BBQ plates, we have something to satisfy every craving. Filter by category or search above.
-            </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
+          <div ref={originalCategoriesRef} className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
             {HOT_N_TASTY_CATEGORIES.map((category) => (
               <button
                 key={category.id}
