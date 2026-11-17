@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X, Plus, Minus, Trash2, ShoppingBag, User, MapPin, Home, AlertCircle, PackageCheck, Clock } from "lucide-react";
 import { MenuItem } from "@/data/hotNTastyMenu";
+import { getCartSuggestions } from "@/utils/cartSuggestions";
+import { toast } from "sonner";
 
 interface CartItem {
   item: MenuItem;
@@ -11,6 +13,8 @@ interface HotNTastyCartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   cartItems: CartItem[];
+  menuItems: MenuItem[];
+  onAddToCart: (item: MenuItem) => void;
   onUpdateQuantity: (itemId: string, delta: number) => void;
   onRemoveItem: (itemId: string) => void;
   onClearCart: () => void;
@@ -55,6 +59,8 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
   isOpen,
   onClose,
   cartItems,
+  menuItems,
+  onAddToCart,
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
@@ -64,6 +70,7 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
   const [selectedArea, setSelectedArea] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [showWarning, setShowWarning] = useState(false);
+  const suggestions = React.useMemo(() => getCartSuggestions(cartItems, menuItems, 5), [cartItems, menuItems]);
 
   // Live Timer states
   const [pktNow, setPktNow] = useState<Date>(getPKTTime());
@@ -309,6 +316,54 @@ export const HotNTastyCartDrawer: React.FC<HotNTastyCartDrawerProps> = ({
                   </div>
                 </div>
               ))}
+
+              {/* Cart upsells are part of the existing scroll area, not a modal
+                  and not an additional checkout step. */}
+              {suggestions.length > 0 && (
+                <section aria-labelledby="cart-suggestions-title" className="mt-6 border-t border-zinc-800 pt-5">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div>
+                      <h4 id="cart-suggestions-title" className="text-sm font-black text-white">
+                        Complete your meal
+                      </h4>
+                      <p className="text-xs text-zinc-400 mt-1">
+                        You may also like these add-ons
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-full shrink-0">
+                      Recommended
+                    </span>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory" aria-label="Suggested menu items">
+                    {suggestions.map((item) => {
+                      const alreadyInCart = cartItems.some(({ item: selected }) => selected.id === item.id);
+                      return (
+                        <article key={item.id} className="w-[150px] min-w-[150px] snap-start rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/70 flex flex-col">
+                          <img src={item.image || "/logo.jpg"} alt={item.name} loading="lazy" className="w-full h-24 object-cover bg-zinc-800" />
+                          <div className="p-2.5 flex flex-col flex-1 gap-2">
+                            <div className="flex-1">
+                              <h5 className="text-xs font-bold text-white line-clamp-2 min-h-[2rem]" title={item.name}>{item.name}</h5>
+                              <p className="text-red-400 font-black text-xs mt-1">Rs {item.price}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onAddToCart(item);
+                                toast.success(`${item.name} added to cart`);
+                              }}
+                              className="w-full flex items-center justify-center gap-1 bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white font-bold text-xs py-2 rounded-lg transition"
+                              aria-label={`Add ${item.name} to cart`}
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              {alreadyInCart ? "Add one more" : "Add"}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </div>
